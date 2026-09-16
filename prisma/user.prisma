@@ -1,0 +1,25 @@
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String 
+  password      String?
+
+  phone         String?
+  image         String?
+
+  role          UserRole @default(USER)
+
+  status        UserStatus   @default(ACTIVE)
+  isVerified    Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  listings      Listing[]
+  favorites     Favorite[]
+  subscriptions Subscription[]
+
+  @@unique([email])
+  @@map("users")
+}

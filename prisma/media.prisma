@@ -1,0 +1,10 @@
+model Media {
+  id          String   @id @default(uuid())
+  url         String
+  alt         String?
+  public_id   String
+  extension   String
+  secure_url  String
+  size        String
+  createdAt   DateTime @default(now())
+}

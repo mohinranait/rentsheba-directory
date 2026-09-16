@@ -14,17 +14,10 @@ const listings = [
   { name: 'Nirvana Wellness Studio', cat: 'Health & Wellness · Gulshan', city: 'Dhaka', rating: '4.8', reviews: '86', tag: 'Top rated', initials: 'NW', tone: 'bg-[#f1e9dc]' },
   { name: 'Brightline Creative Co.', cat: 'Professional Services · Banani', city: 'Dhaka', rating: '5.0', reviews: '42', tag: 'Verified', initials: 'BC', tone: 'bg-[#e3eaf3]' },
 ]
-
 export default function Home() {
-
-
   return (
     <>
-
-
-
       <HeroSection />
-
       <section id="categories" className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>

@@ -1,0 +1,23 @@
+model Payment {
+  id              String         @id @default(uuid())
+
+  subscriptionId  String         @unique
+
+  transactionId   String         @unique
+
+  amount          Decimal
+
+  method          PaymentMethod
+
+  status          PaymentStatus @default(PENDING)
+
+  paidAt          DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  subscription    Subscription   @relation( fields: [subscriptionId],references: [id],  onDelete: Cascade )
+
+  @@index([transactionId])
+  @@index([status])
+}

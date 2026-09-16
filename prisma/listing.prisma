@@ -1,0 +1,59 @@
+model Listing {
+  id          String        @id @default(uuid())
+
+  title       String
+  slug        String        @unique
+
+  description String        @db.Text
+
+  shortDescription String?  @db.VarChar(500)
+
+  phone       String?
+  email       String?
+  website     String?
+
+  address     String?
+
+  latitude    Decimal?
+  longitude   Decimal?
+
+  status      ListingStatus @default(PENDING)
+
+  isFeatured  Boolean       @default(false)
+
+  viewCount   Int           @default(0)
+
+  publishedAt DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Owner
+  ownerId     String
+  owner       User          @relation( fields: [ownerId], references: [id],  onDelete: Cascade )
+
+  // Category
+  // categoryId  String
+  // category    Category      @relation( fields: [categoryId], references: [id] )
+
+  // Location
+  // locationId  String
+  // location    Location      @relation( fields: [locationId], references: [id] )
+
+  // Relations
+  // images      Media[]
+
+  favorites   Favorite[]
+
+  // reviews     ListingReview[]
+
+  @@index([status])
+  @@index([ownerId])
+
+  // @@index([categoryId])
+  // @@index([locationId])
+
+  // @@index([categoryId, locationId])
+
+  // @@index([status, categoryId, locationId])
+}

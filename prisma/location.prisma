@@ -1,0 +1,25 @@
+model Location {
+  id          String       @id @default(uuid())
+
+  name        String
+  slug        String
+
+  type        LocationType
+
+  parentId    String?
+
+  parent      Location?    @relation( "LocationHierarchy",  fields: [parentId], references: [id] )
+
+  children    Location[]   @relation("LocationHierarchy")
+
+  isActive    Boolean      @default(true)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // listings    Listing[]
+
+  @@unique([slug, parentId])
+  @@index([parentId])
+  @@index([type])
+}

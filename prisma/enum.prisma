@@ -1,0 +1,52 @@
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+  EXPIRED
+  DRAFT
+}
+
+enum UserRole {
+  USER
+  MANAGER
+  ADMIN
+}
+
+enum LocationType {
+  COUNTRY
+  DIVISION
+  DISTRICT
+  UPAZILA
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentMethod {
+  STRIPE
+  SSLCOMMERZ
+  OTHER
+}
+
+enum PlanType {
+  FREE
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}

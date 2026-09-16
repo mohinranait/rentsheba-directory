@@ -1,0 +1,25 @@
+
+
+
+model SubscriptionPlan {
+  id              String   @id @default(uuid())
+
+  name            String
+
+  slug            String   @unique
+
+  type            PlanType @unique
+
+  price           Decimal  @default(0)
+
+  maxListings     Int
+
+  durationInDays  Int
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  subscriptions   Subscription[]
+}
