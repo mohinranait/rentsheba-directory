@@ -38,9 +38,6 @@ export async function POST(request: Request) {
       throw new Error("User is deleted");
     }
 
-
-
-
     const redis = await connectRedis();
     // Verify OTP
     const verifyOtpKey = `verify-email-otp:${email}`
@@ -105,7 +102,7 @@ export async function POST(request: Request) {
     cookieStore.set("accessToken", accessToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "none",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
 

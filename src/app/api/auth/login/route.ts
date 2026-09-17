@@ -9,6 +9,7 @@ import { UserStatus } from "../../../../../generated/prisma/enums";
 
 export async function POST(request: Request) {
   try {
+
     const cookieStore  = await cookies()
     const body = await request.json();
 
@@ -58,7 +59,8 @@ export async function POST(request: Request) {
     cookieStore.set("accessToken", accessToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "none",
+      // sameSite: "none",
+      sameSite: "lax", 
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
 

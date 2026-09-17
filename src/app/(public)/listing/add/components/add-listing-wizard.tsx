@@ -2,9 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,7 +13,6 @@ import {
   listingFormSchema,
   STEP_FIELDS,
 } from "@/lib/schemas/listing-schema";
-
 import { StepIndicator, type WizardStep } from "./step-indicator";
 import { StepAccount } from "./steps/step-account";
 import { StepBasics } from "./steps/step-basics";
@@ -39,17 +38,12 @@ const DRAFT_KEY = "add-listing-draft-v1";
 const NON_SERIALIZABLE_KEYS = new Set(["logo", "cover", "gallery"]);
 
 export function AddListingWizard() {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // const form = useForm<ListingFormValues, undefined, ListingFormValues>({
-  //   resolver: zodResolver(listingFormSchema),
-  //   defaultValues: {},
-  //   mode: "onChange",
-  // });
 
 
   const form = useForm<ListingFormValues>({
@@ -188,7 +182,9 @@ export function AddListingWizard() {
         body: formData,
       });
 
-      if (!res.ok) {
+      const data = await res.json()
+
+      if (!data.success) {
         throw new Error("Submission failed");
       }
 
@@ -200,6 +196,10 @@ export function AddListingWizard() {
         top: 0,
         behavior: "smooth",
       });
+
+      router.push(`/verify-email/${encodeURIComponent(data.data.email)}`);
+      
+
     } catch {
       setSubmitError(
         "দুঃখিত, জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",

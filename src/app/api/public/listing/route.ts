@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto"
+import ejs from "ejs";
 import { NextResponse } from "next/server";
-// import ejs from "ejs";
-// import path from "path"
-// import { transporter } from "@/lib/nodemailer";
+import path from "path"
 import config from "@/lib/config";
+import { transporter } from "@/lib/nodemailer";
 import { prisma } from "@/lib/prisma";
 import { connectRedis } from "@/lib/radis";
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     // hasing password
     const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
-    console.log({ hashedPassword });
+    // console.log({ hashedPassword });
 
 
     const redis = await connectRedis();
@@ -95,24 +95,24 @@ export async function POST(request: Request) {
 
 
     // Send email
-    // const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs")
-    // const html = await ejs.renderFile(templatePath, {
-    //   name: title,
-    //   otp,
-    //   expireTime,
-    // })
-    // await transporter.sendMail({
-    //   from: config.email_sender,
-    //   to: email,
-    //   subject: "Verify Your Email - RentSheba",
-    //   html
-    // })
+    const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs")
+    const html = await ejs.renderFile(templatePath, {
+      name: title,
+      otp,
+      expireTime,
+    })
+    await transporter.sendMail({
+      from: config.email_sender,
+      to: email,
+      subject: "Verify Your Email - RentSheba",
+      html
+    })
 
     return NextResponse.json(
       {
         success: true,
         message: "Verification OTP sent successfully",
-        data: null,
+        data: {email},
       },
       { status: 201 },
     );
