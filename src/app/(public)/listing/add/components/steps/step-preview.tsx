@@ -1,9 +1,9 @@
 "use client";
 
+import { Globe, Mail, MapPin, Pencil, Phone, Star } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { Pencil, MapPin, Phone, Mail, Globe, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { ListingFormValues } from "@/lib/schemas/listing-schema";
 
@@ -66,7 +66,7 @@ export function StepPreview({ onEdit }: { onEdit: (index: number) => void }) {
             <div className="-mt-10 h-16 w-16 rounded-lg border-4 border-white bg-[#C9C2B2] shadow-sm" />
           )}
           <div>
-            <h3 className="text-lg font-semibold text-[#1A1A1A]">{values.name || "প্রতিষ্ঠানের নাম"}</h3>
+            <h3 className="text-lg font-semibold text-[#1A1A1A]">{values.title || "প্রতিষ্ঠানের নাম"}</h3>
             {values.tagline && <p className="text-sm text-[#6B6656]">{values.tagline}</p>}
           </div>
         </div>
@@ -90,11 +90,9 @@ export function StepPreview({ onEdit }: { onEdit: (index: number) => void }) {
           <p className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8A8371]" />
             {values.addressLine1}
-            {values.addressLine2 ? `, ${values.addressLine2}` : ""} {values.postalCode}
           </p>
           <p className="flex items-center gap-2">
             <Phone className="h-4 w-4 shrink-0 text-[#8A8371]" /> {values.phone}
-            {values.phoneAlt ? ` / ${values.phoneAlt}` : ""}
           </p>
           {values.email && (
             <p className="flex items-center gap-2">
@@ -127,8 +125,8 @@ export function StepPreview({ onEdit }: { onEdit: (index: number) => void }) {
 
       <Section title="সার্ভিস, সুবিধা ও FAQ" stepIndex={3} onEdit={onEdit}>
         <div className="flex flex-wrap gap-1.5">
-          {values.features?.map((f, i) => (
-            <Badge key={i} variant="outline">
+          {values?.features?.map((f) => (
+            <Badge key={f.name} variant="outline">
               {f.name}
             </Badge>
           ))}
@@ -140,9 +138,9 @@ export function StepPreview({ onEdit }: { onEdit: (index: number) => void }) {
 
       <Section title="ছবি" stepIndex={4} onEdit={onEdit}>
         <div className="flex flex-wrap gap-2">
-          {values.gallery?.map((file, i) => (
+          {values.gallery?.map((file, idx) => (
             <img
-              key={i}
+              key={idx}
               src={URL.createObjectURL(file)}
               alt=""
               className="h-16 w-16 rounded-md border border-[#E3DDCF] object-cover"

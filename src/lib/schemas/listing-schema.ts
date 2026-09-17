@@ -101,7 +101,7 @@ export const openingHourSchema = z
 
 export const businessDetailsSchema = z.object({
   establishedYear: z
-    .union([z.coerce.number().int().min(1900).max(new Date().getFullYear()), z.nan()])
+    .union([z.number().int().min(1900).max(new Date().getFullYear()), z.nan()])
     .optional(),
   priceRange: z.enum(["$", "$$", "$$$", "$$$$"]).optional().or(z.literal("")),
   areaServed: z.string().trim().max(200).optional().or(z.literal("")),
@@ -124,7 +124,7 @@ export const faqSchema = z.object({
 
 export const featuresSchema = z.object({
   features: z.array(featureSchema).min(1, "কমপক্ষে একটি সার্ভিস বা সুবিধা যোগ করুন"),
-  faqs: z.array(faqSchema).optional().default([]),
+  faqs: z.array(faqSchema),
 });
 
 // ----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ const imageFile = (requiredMessage = "একটি ছবি নির্বা�
 export const photosSchema = z.object({
   logo: imageFile().optional().nullable(),
   cover: imageFile("কভার ছবি আবশ্যক"),
-  gallery: z.array(imageFile()).max(8, "সর্বোচ্চ ৮টি ছবি যোগ করা যাবে").optional().default([]),
+  gallery: z.array(imageFile()).max(8, "সর্বোচ্চ ৮টি ছবি যোগ করা যাবে"),
 });
 
 // ----------------------------------------------------------------------------
