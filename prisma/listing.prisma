@@ -1,32 +1,61 @@
 model Listing {
   id          String        @id @default(uuid())
 
+  // Basic information
   title       String
   slug        String        @unique
+  tagline         String?
+  shortDescription String? @db.VarChar(500)
+  description     String @db.Text
 
-  description String        @db.Text
-
-  shortDescription String?  @db.VarChar(500)
-
+   // Contact
   phone       String?
   email       String?
   website     String?
+  whatsapp    String?
 
-  address     String?
+  // Physical address
+  addressLine1 String?
 
-  latitude    Decimal?
-  longitude   Decimal?
+  // Geo
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
 
-  status      ListingStatus @default(PENDING)
+  // Business information
+  establishedYear Int?
+  priceRange      String?
+  areaServed      String?
 
-  isFeatured  Boolean       @default(false)
+  // Social media
+  socialLinks Json?
 
-  viewCount   Int           @default(0)
+  // Listing flags
+  isFeatured  Boolean @default(false)
+  isClaimed   Boolean @default(false)
 
-  publishedAt DateTime?
+  verificationStatus ListingStatus @default(PENDING)
+  verifiedAt         DateTime?
+  rejectionReason String?
 
+
+
+  // SEO
+  metaTitle       String? @db.VarChar(70)
+  metaDescription String? @db.VarChar(160)
+  canonicalUrl    String?
+  noIndex        Boolean @default(false)
+
+
+   // Cached statistics
+  averageRating Float @default(0)
+  reviewCount   Int   @default(0)
+  viewCount     Int   @default(0)
+  favoriteCount Int   @default(0)
+
+  // Timestamps
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
 
   // Owner
   ownerId     String
@@ -47,7 +76,7 @@ model Listing {
 
   // reviews     ListingReview[]
 
-  @@index([status])
+  @@index([verificationStatus])
   @@index([ownerId])
 
   // @@index([categoryId])

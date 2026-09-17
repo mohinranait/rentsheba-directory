@@ -60,18 +60,18 @@ export async function POST(request: Request) {
 
 
     // Send email
-    // const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs")
-    // const html = await ejs.renderFile(templatePath, {
-    //   name: title,
-    //   otp,
-    //   expireTime,
-    // })
-    // await transporter.sendMail({
-    //   from: config.email_sender,
-    //   to: email,
-    //   subject: "Verify Your Email - RentSheba",
-    //   html
-    // })
+    const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs")
+    const html = await ejs.renderFile(templatePath, {
+      name: title,
+      otp,
+      expireTime,
+    })
+    await transporter.sendMail({
+      from: config.email_sender,
+      to: email,
+      subject: "Verify Your Email - RentSheba",
+      html
+    })
 
     return NextResponse.json(
       {

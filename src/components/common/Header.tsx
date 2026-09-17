@@ -1,5 +1,6 @@
 
 import { ArrowRight, Globe2, Menu } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '../ui/button'
 
 const Header = () => {
@@ -36,9 +37,11 @@ const Header = () => {
           <Button className="hidden bg-transparent rounded-lg px-3 py-2 text-sm font-semibold text-[#46645a] hover:bg-white md:block">
             Log in
           </Button>
+          <Link href={'/listing/add'}>
           <Button className="rounded-lg bg-[#133f35] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1d5548]">
             Add your listing <ArrowRight className="ml-1 inline size-4" />
           </Button>
+          </Link>
           <Button className="grid size-10 place-items-center rounded-lg border border-[#dfe8e3] md:hidden">
             <Menu className="size-5" />
           </Button>
