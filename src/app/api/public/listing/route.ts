@@ -12,8 +12,217 @@ import {
   listingFormSchema,
 } from "@/lib/schemas/listing-schema";
 import { uploadAndCreateMedia } from "@/utils/upload-media";
+import { ListingStatus } from "../../../../../generated/prisma/enums";
 
 const OTP_EXPIRE_SECONDS = 5 * 60;
+
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 48;
+
+export type PublicListingItem = {
+  id: string;
+  title: string;
+  slug: string;
+  tagline: string | null;
+  shortDescription: string | null;
+  priceRange: string | null;
+  isFeatured: boolean;
+  isClaimed: boolean;
+  averageRating: number;
+  reviewCount: number;
+  viewCount: number;
+  favoriteCount: number;
+  publishedAt: Date | string | null;
+  thumbnail: { secure_url: string; alt: string | null } | null;
+  category: { name: string; slug: string } | null;
+  location: { nameEn: string; nameLocal: string; type: string } | null;
+};
+
+export type PublicListingResponse = {
+  success: boolean;
+  data: {
+    items: PublicListingItem[];
+    meta: {
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    };
+  };
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/public/listing
+// ---------------------------------------------------------------------------
+// Visitor-facing browse endpoint. Only approved listings are exposed. Used
+// server-side by the homepage (Explores) as well as any client-side browse
+// pages. Responses are CDN-cacheable for fast, SEO-friendly delivery.
+//
+// Query params:
+//   search     Partial match on title, tagline or description
+//   category   Category slug (also accepts `categoryId`)
+//   locationId Restrict to a location and all of its descendants
+//   featured   "true" filters to featured listings only
+//   sortBy     latest (default) | featured | popular | rating
+//   page       1-based page number (default: 1)
+//   pageSize   Items per page (default: 10, max: 48)
+// ---------------------------------------------------------------------------
+
+const PUBLIC_LISTING_SELECT = {
+  id: true,
+  title: true,
+  slug: true,
+  tagline: true,
+  shortDescription: true,
+  priceRange: true,
+  isFeatured: true,
+  isClaimed: true,
+  averageRating: true,
+  reviewCount: true,
+  viewCount: true,
+  favoriteCount: true,
+  publishedAt: true,
+  thumbnail: { select: { secure_url: true, alt: true } },
+  category: { select: { name: true, slug: true } },
+  location: { select: { nameEn: true, nameLocal: true, type: true } },
+} as const;
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+
+    const page = Math.max(1, Number(searchParams.get("page") ?? 1) || 1);
+    const pageSize = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(
+        1,
+        Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE) ||
+        DEFAULT_PAGE_SIZE,
+      ),
+    );
+
+    const search = searchParams.get("search")?.trim() ?? "";
+    const categorySlug = searchParams.get("category")?.trim() ?? "";
+    const categoryId = searchParams.get("categoryId")?.trim() ?? "";
+    const locationId = searchParams.get("locationId")?.trim() ?? "";
+    const featuredOnly = searchParams.get("featured") === "true";
+
+    const where = {
+      verificationStatus: ListingStatus.APPROVED,
+      ...(search
+        ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" as const } },
+            { tagline: { contains: search, mode: "insensitive" as const } },
+            {
+              shortDescription: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              description: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+          ],
+        }
+        : {}),
+      ...(categorySlug ? { category: { slug: categorySlug as string } } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(featuredOnly ? { isFeatured: true } : {}),
+      ...(locationId
+        ? { locationId: { in: await collectLocationIds(locationId) } }
+        : {}),
+    };
+
+    const orderBy =
+      searchParams.get("sortBy") === "featured"
+        ? [{ isFeatured: "desc" as const }, { viewCount: "desc" as const }]
+        : searchParams.get("sortBy") === "popular"
+          ? { viewCount: "desc" as const }
+          : searchParams.get("sortBy") === "rating"
+            ? [
+              { averageRating: "desc" as const },
+              { reviewCount: "desc" as const },
+            ]
+            : [
+              { isFeatured: "desc" as const },
+              { publishedAt: "desc" as const },
+            ];
+
+    const [total, items] = await Promise.all([
+      prisma.listing.count({ where }),
+      prisma.listing.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: PUBLIC_LISTING_SELECT,
+      }),
+    ]);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          items,
+          meta: {
+            total,
+            page,
+            pageSize,
+            totalPages: Math.max(1, Math.ceil(total / pageSize)),
+          },
+        },
+      } satisfies PublicListingResponse,
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      },
+    );
+  } catch (error) {
+    console.error("Get public listings error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Something went wrong",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+// Returns a location id and every descendant id (division → district →
+// upazila) so filtering by a parent also matches all of its children.
+async function collectLocationIds(locationId: string): Promise<string[]> {
+  const locations = await prisma.location.findMany({
+    select: { id: true, parentId: true },
+  });
+
+  const childrenByParent = new Map<string | null, string[]>();
+
+  for (const location of locations) {
+    const siblings = childrenByParent.get(location.parentId) ?? [];
+    siblings.push(location.id);
+    childrenByParent.set(location.parentId, siblings);
+  }
+
+  const ids: string[] = [];
+
+  const walk = (id: string) => {
+    ids.push(id);
+    for (const childId of childrenByParent.get(id) ?? []) {
+      walk(childId);
+    }
+  };
+
+  walk(locationId);
+
+  return ids;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers

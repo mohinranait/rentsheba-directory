@@ -1,28 +1,39 @@
-'use client'
+import { ArrowRight } from "lucide-react";
+import { Suspense } from "react";
 
+import SubscriptionSection from "@/components/common/SubscriptionSection";
+import GridBackdrop from "@/components/GridBackdrop";
+import CategoriesGrid from "./components/CategoriesGrid";
+import CreateListingSteps from "./components/CreateListingSteps";
+import Explores from "./components/Explores";
+import HeroSection from "./components/HeroSection";
 
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+const EXPLORES_SKELETON = [0, 1, 2, 3, 4, 5];
 
-import ListingCard from '@/components/common/ListingCard'
-import SubscriptionSection from '@/components/common/SubscriptionSection'
-import GridBackdrop from '@/components/GridBackdrop'
-import { Button } from '@/components/ui/button'
-import CategoriesGrid from './components/CategoriesGrid'
-import CreateListingSteps from './components/CreateListingSteps'
-import HeroSection from './components/HeroSection'
+const ExploresFallback = () => (
+  <section className="relative border-y border-[#e2eae4]/70 bg-white/40 backdrop-blur-md">
+    <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <div className="h-4 w-40 animate-pulse rounded bg-[#dbe7e1]" />
+      <div className="mt-3 h-9 w-64 animate-pulse rounded bg-[#dbe7e1]" />
+      <div className="mt-8 grid gap-5 md:grid-cols-3">
+        {EXPLORES_SKELETON.map((item) => (
+          <div
+            key={`explores-fallback-${item}`}
+            className="h-64 animate-pulse rounded-2xl bg-[#eef4f1]"
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
-const listings = [
-  { name: 'The Green Leaf Kitchen', cat: 'Restaurant · Dhanmondi', city: 'Dhaka', rating: '4.9', reviews: '128', tag: 'Editor’s pick', initials: 'GL', tone: 'bg-[#e7f0eb]' },
-  { name: 'Nirvana Wellness Studio', cat: 'Health & Wellness · Gulshan', city: 'Dhaka', rating: '4.8', reviews: '86', tag: 'Top rated', initials: 'NW', tone: 'bg-[#f1e9dc]' },
-  { name: 'Brightline Creative Co.', cat: 'Professional Services · Banani', city: 'Dhaka', rating: '5.0', reviews: '42', tag: 'Verified', initials: 'BC', tone: 'bg-[#e3eaf3]' },
-]
 export default function Home() {
   return (
     <div className=" z-10">
       <GridBackdrop />
       <HeroSection />
       <section id="categories" className="relative bg-white/50 py-20 ">
-        <div className=' mx-auto max-w-7xl px-5 lg:px-8'>
+        <div className=" mx-auto max-w-7xl px-5 lg:px-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
@@ -40,45 +51,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="explore" className="relative border-y border-[#e2eae4]/70 bg-white/40 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
-                Curated for you
-              </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-.045em] text-[#173f34] sm:text-4xl">
-                Popular near you
-              </h2>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] bg-white/50 text-[#789087] backdrop-blur-sm">
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] bg-white/50 text-[#789087] backdrop-blur-sm">
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {listings.length ? (
-              listings.map((item) => <ListingCard key={item.name} item={item} />)
-            ) : (
-              <div className="col-span-3 rounded-2xl border border-dashed border-[#cbdcd1] bg-white/40 p-10 text-center text-sm text-[#6d887d] backdrop-blur-sm">
-                No listings match your search yet. Try another location or
-                keyword.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={<ExploresFallback />}>
+        <Explores />
+      </Suspense>
 
       <CreateListingSteps />
 
-
       <SubscriptionSection />
-
-
     </div>
-  )
+  );
 }

@@ -1,3 +1,4 @@
+'use client'
 import { BadgeCheck, LockKeyhole, MapPin, Search, ShieldCheck, Sparkles, Star } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
