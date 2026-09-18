@@ -98,61 +98,100 @@ export function StepLocationContact() {
         name="locationId"
         label="এলাকা *"
         description="বিভাগ, জেলা ও উপজেলা — তিনটি ধাপ নির্বাচন করুন"
-        render={({ field, fieldState }) => (
-          <div className="space-y-2">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Select onValueChange={handleDivisionChange} value={divisionId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="বিভাগ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {divisions.map((division) => (
-                    <SelectItem key={division.id} value={division.id}>
-                      {division.nameLocal}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        render={({ field, fieldState }) => {
+          const selectedDivision = divisions.find(
+            (division) => division.id === divisionId,
+          );
 
-              <Select
-                onValueChange={handleDistrictChange}
-                value={districtId}
-                disabled={!divisionId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="জেলা" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map((district) => (
-                    <SelectItem key={district.id} value={district.id}>
-                      {district.nameLocal}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          const selectedDistrict = districts.find(
+            (district) => district.id === districtId,
+          );
 
-              <Select
-                onValueChange={handleUpazilaChange}
-                value={field.value}
-                disabled={!districtId}
-              >
-                <SelectTrigger
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
+          const selectedUpazila = upazilas.find(
+            (upazila) => upazila.id === field.value,
+          );
+
+          return (
+            <div className="space-y-2">
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* Division */}
+                <Select
+                  value={divisionId}
+                  onValueChange={handleDivisionChange}
                 >
-                  <SelectValue placeholder="উপজেলা" />
-                </SelectTrigger>
-                <SelectContent>
-                  {upazilas.map((upazila) => (
-                    <SelectItem key={upazila.id} value={upazila.id}>
-                      {upazila.nameLocal}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger className={"w-full"}>
+                    <SelectValue placeholder="বিভাগ">
+                      {selectedDivision?.nameLocal}
+                    </SelectValue>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {divisions.map((division) => (
+                      <SelectItem
+                        key={division.id}
+                        value={division.id}
+                      >
+                        {division.nameLocal}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* District */}
+                <Select
+                  value={districtId}
+                  onValueChange={handleDistrictChange}
+                  disabled={!divisionId}
+                >
+                  <SelectTrigger  className={"w-full"}>
+                    <SelectValue placeholder="জেলা">
+                      {selectedDistrict?.nameLocal}
+                    </SelectValue>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {districts.map((district) => (
+                      <SelectItem
+                        key={district.id}
+                        value={district.id}
+                      >
+                        {district.nameLocal}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Upazila */}
+                <Select
+                  value={field.value || ""}
+                  onValueChange={handleUpazilaChange}
+                  disabled={!districtId}
+                >
+                  <SelectTrigger
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                     className={"w-full"}
+                  >
+                    <SelectValue placeholder="উপজেলা">
+                      {selectedUpazila?.nameLocal}
+                    </SelectValue>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {upazilas.map((upazila) => (
+                      <SelectItem
+                        key={upazila.id}
+                        value={upazila.id}
+                      >
+                        {upazila.nameLocal}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       <ControlledField

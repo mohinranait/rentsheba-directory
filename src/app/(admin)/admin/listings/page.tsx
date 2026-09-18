@@ -197,7 +197,7 @@ export default function AllListingsPage() {
           setCategories(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     void fetch("/api/locations/tree")
       .then((response) => response.json())
@@ -223,7 +223,7 @@ export default function AllListingsPage() {
           setLocationOptions(options);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       cancelled = true;
@@ -332,6 +332,15 @@ export default function AllListingsPage() {
   const rangeStart = meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
   const rangeEnd = Math.min(meta.page * meta.pageSize, meta.total);
 
+
+  const selectedCategory = categoryOptions.find(
+    (option) => option.id === categoryId,
+  );
+
+  const selectedLocation = locationOptions.find(
+    (option) => option.id === locationId,
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-6">
       {/* Header */}
@@ -406,7 +415,7 @@ export default function AllListingsPage() {
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-2">
               <Select value={status} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-[145px]">
+                <SelectTrigger className="w-45">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
 
@@ -421,13 +430,21 @@ export default function AllListingsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={categoryId} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="All Categories" />
+              <Select
+                value={categoryId}
+                onValueChange={handleCategoryChange}
+              >
+                <SelectTrigger className="w-45">
+                  <SelectValue placeholder="All Categories">
+                    {categoryId === "all"
+                      ? "All Categories"
+                      : selectedCategory?.label ?? "All Categories"}
+                  </SelectValue>
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
+
                   {categoryOptions.map((option) => (
                     <SelectItem key={option.id} value={option.id}>
                       {option.label}
@@ -436,13 +453,21 @@ export default function AllListingsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={locationId} onValueChange={handleLocationChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="All Locations" />
+              <Select
+                value={locationId}
+                onValueChange={handleLocationChange}
+              >
+                <SelectTrigger className="w-45">
+                  <SelectValue placeholder="All Locations">
+                    {locationId === "all"
+                      ? "All Locations"
+                      : selectedLocation?.label ?? "All Locations"}
+                  </SelectValue>
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
+
                   {locationOptions.map((option) => (
                     <SelectItem key={option.id} value={option.id}>
                       {option.label}
@@ -586,7 +611,7 @@ export default function AllListingsPage() {
                 value={String(pageSize)}
                 onValueChange={handlePageSizeChange}
               >
-                <SelectTrigger className="h-8 w-[70px]">
+                <SelectTrigger className="h-8 w-17.5">
                   <SelectValue />
                 </SelectTrigger>
 
@@ -674,7 +699,7 @@ function ListingRow({
 
       {/* Listing */}
       <TableCell>
-        <div className="flex min-w-[250px] items-center gap-3">
+        <div className="flex min-w-62.5 items-center gap-3">
           {listing.thumbnail?.secure_url ? (
             <Image
               src={listing.thumbnail.secure_url}

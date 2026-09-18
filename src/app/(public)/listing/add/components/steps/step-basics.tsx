@@ -122,33 +122,53 @@ export function StepBasics() {
         )}
       />
 
+
       <ControlledField
         control={form.control}
         name="categoryId"
         label="ক্যাটাগরি *"
-        render={({ field, fieldState }) => (
-          <Select
-            onValueChange={field.onChange}
-            value={field.value}
-            disabled={isLoading}
-          >
-            <SelectTrigger id={field.name} aria-invalid={fieldState.invalid}>
-              <SelectValue
-                placeholder={
-                  isLoading ? "ক্যাটাগরি লোড হচ্ছে..." : "একটি ক্যাটাগরি বাছাই করুন"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {categoryOptions.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.depth > 0 && "— ".repeat(category.depth)}
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        render={({ field, fieldState }) => {
+          const selectedCategory = categoryOptions.find(
+            (category) => category.id === field.value,
+          );
+
+          return (
+            <Select
+              value={field.value || ""}
+              onValueChange={field.onChange}
+              disabled={isLoading}
+            >
+              <SelectTrigger
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                className="w-full"
+              >
+                <SelectValue
+                  placeholder={
+                    isLoading
+                      ? "ক্যাটাগরি লোড হচ্ছে..."
+                      : "একটি ক্যাটাগরি বাছাই করুন"
+                  }
+                >
+                  {selectedCategory?.name}
+                </SelectValue>
+              </SelectTrigger>
+
+              <SelectContent>
+                {categoryOptions.map((category) => (
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                  >
+                    {category.depth > 0 &&
+                      "— ".repeat(category.depth)}
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }}
       />
 
       <ControlledField
