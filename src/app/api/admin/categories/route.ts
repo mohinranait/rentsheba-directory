@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { categoryFormSchema } from "@/lib/schemas/category-schema";
 import { slugify, uniqueSlug } from "@/lib/slug";
-import { uploadToCloudinary } from "@/utils/upload-image";
+import { uploadAndCreateMedia } from "@/utils/upload-media";
 
 export type CategoryImage = {
   id: string;
@@ -96,22 +96,6 @@ export async function GET() {
       { status: 500 },
     );
   }
-}
-
-async function uploadAndCreateMedia(image: File, alt: string) {
-  const { secure_url, public_id, extension, size } =
-    await uploadToCloudinary(image);
-
-  return prisma.media.create({
-    data: {
-      url: secure_url,
-      alt,
-      public_id,
-      extension,
-      secure_url,
-      size: String(size),
-    },
-  });
 }
 
 export async function POST(request: Request) {

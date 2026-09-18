@@ -8,5 +8,20 @@ model Media {
   size        String
 
   category    Category?   
+
+   // Logo relation
+  logoListing       Listing? @relation("ListingLogo")
+
+  // Thumbnail relation
+  thumbnailListing  Listing? @relation("ListingThumbnail")
+
+  // Gallery relation
+  galleryListing    Listing? @relation("ListingGallery",  fields: [galleryListingId],  references: [id] )
+
+  galleryListingId  String?
+
+
   createdAt   DateTime @default(now())
+
+  @@index([galleryListingId])
 }

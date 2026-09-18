@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { ControlledField } from "@/components/ui/controlled-field";
 import { Input } from "@/components/ui/input";
@@ -13,22 +14,75 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { ListingFormValues } from "@/lib/schemas/listing-schema";
 
-// TODO: replace with categories fetched from your API / DB
-const CATEGORIES = [
-  { id: "restaurants", name: "রেস্টুরেন্ট ও খাবার" },
-  { id: "healthcare", name: "স্বাস্থ্যসেবা" },
-  { id: "education", name: "শিক্ষা প্রতিষ্ঠান" },
-  { id: "home-services", name: "হোম সার্ভিস" },
-  { id: "beauty-spa", name: "বিউটি ও স্পা" },
-  { id: "automotive", name: "অটোমোটিভ" },
-  { id: "retail", name: "শপ ও রিটেইল" },
-  { id: "professional", name: "প্রফেশনাল সার্ভিস" },
-];
+type CategoryOption = {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+};
+
+// Turn the flat category list into a hierarchy-friendly (parent → child) order
+function buildCategoryOptions(categories: CategoryOption[]) {
+  const childrenByParent = new Map<string, CategoryOption[]>();
+  const roots: CategoryOption[] = [];
+
+  for (const category of categories) {
+    if (category.parentId) {
+      const siblings = childrenByParent.get(category.parentId) ?? [];
+      siblings.push(category);
+      childrenByParent.set(category.parentId, siblings);
+    } else {
+      roots.push(category);
+    }
+  }
+
+  const flattened: (CategoryOption & { depth: number })[] = [];
+
+  const walk = (node: CategoryOption, depth: number) => {
+    flattened.push({ ...node, depth });
+    for (const child of childrenByParent.get(node.id) ?? []) {
+      walk(child, depth + 1);
+    }
+  };
+
+  for (const root of roots) {
+    walk(root, 0);
+  }
+
+  return flattened;
+}
 
 export function StepBasics() {
   const form = useFormContext<ListingFormValues>();
   const descriptionValue = form.watch("description") ?? "";
   const shortDescriptionValue = form.watch("shortDescription") ?? "";
+
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isActive = true;
+
+    fetch("/api/public/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isActive && data.success) {
+          setCategories(data.data);
+        }
+      })
+      .catch(() => {
+        // Leave the dropdown empty; the field error will guide the user
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const categoryOptions = buildCategoryOptions(categories);
 
   return (
     <div className="space-y-6">
@@ -73,14 +127,23 @@ export function StepBasics() {
         name="categoryId"
         label="ক্যাটাগরি *"
         render={({ field, fieldState }) => (
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select
+            onValueChange={field.onChange}
+            value={field.value}
+            disabled={isLoading}
+          >
             <SelectTrigger id={field.name} aria-invalid={fieldState.invalid}>
-              <SelectValue placeholder="একটি ক্যাটাগরি বাছাই করুন" />
+              <SelectValue
+                placeholder={
+                  isLoading ? "ক্যাটাগরি লোড হচ্ছে..." : "একটি ক্যাটাগরি বাছাই করুন"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
+              {categoryOptions.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.depth > 0 && "— ".repeat(category.depth)}
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>

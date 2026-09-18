@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import type { LocationNode } from "@/app/api/locations/tree/route";
 import { ControlledField } from "@/components/ui/controlled-field";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,17 +15,74 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { ListingFormValues } from "@/lib/schemas/listing-schema";
 
-// TODO: replace with locations fetched from your API / DB
-const LOCATIONS = [
-  { id: "dhaka-gulshan", name: "গুলশান, ঢাকা" },
-  { id: "dhaka-dhanmondi", name: "ধানমন্ডি, ঢাকা" },
-  { id: "dhaka-uttara", name: "উত্তরা, ঢাকা" },
-  { id: "chattogram-agrabad", name: "আগ্রাবাদ, চট্টগ্রাম" },
-  { id: "sylhet-zindabazar", name: "জিন্দাবাজার, সিলেট" },
-];
-
 export function StepLocationContact() {
   const form = useFormContext<ListingFormValues>();
+  const locationId = form.watch("locationId");
+
+  const [divisions, setDivisions] = useState<LocationNode[]>([]);
+  const [divisionId, setDivisionId] = useState("");
+  const [districtId, setDistrictId] = useState("");
+
+  // Load the whole location hierarchy once
+  useEffect(() => {
+    fetch("/api/locations/tree")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setDivisions(data.data);
+      })
+      .catch(() => {
+        // Leave the dropdowns empty; field validation will guide the user
+      });
+  }, []);
+
+  // If a location is already saved (draft / back navigation), restore selects
+  useEffect(() => {
+    if (!locationId || divisions.length === 0) return;
+
+    for (const division of divisions) {
+      for (const district of division.children) {
+        const isUpazilaOfThisDistrict = district.children.some(
+          (upazila) => upazila.id === locationId,
+        );
+
+        if (isUpazilaOfThisDistrict) {
+          setDivisionId(division.id);
+          setDistrictId(district.id);
+          return;
+        }
+      }
+    }
+  }, [locationId, divisions]);
+
+  const districts = useMemo(
+    () =>
+      divisions.find((division) => division.id === divisionId)?.children ?? [],
+    [divisions, divisionId],
+  );
+
+  const upazilas = useMemo(
+    () =>
+      districts.find((district) => district.id === districtId)?.children ?? [],
+    [districts, districtId],
+  );
+
+  const handleDivisionChange = (id: string | null) => {
+    if (!id) return;
+    setDivisionId(id);
+    setDistrictId("");
+    form.setValue("locationId", "", { shouldValidate: true });
+  };
+
+  const handleDistrictChange = (id: string | null) => {
+    if (!id) return;
+    setDistrictId(id);
+    form.setValue("locationId", "", { shouldValidate: true });
+  };
+
+  const handleUpazilaChange = (id: string | null) => {
+    if (!id) return;
+    form.setValue("locationId", id, { shouldValidate: true });
+  };
 
   return (
     <div className="space-y-6">
@@ -38,34 +97,77 @@ export function StepLocationContact() {
         control={form.control}
         name="locationId"
         label="এলাকা *"
+        description="বিভাগ, জেলা ও উপজেলা — তিনটি ধাপ নির্বাচন করুন"
         render={({ field, fieldState }) => (
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <SelectTrigger id={field.name} aria-invalid={fieldState.invalid}>
-              <SelectValue placeholder="একটি এলাকা বাছাই করুন" />
-            </SelectTrigger>
-            <SelectContent>
-              {LOCATIONS.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id}>
-                  {loc.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Select onValueChange={handleDivisionChange} value={divisionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="বিভাগ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {divisions.map((division) => (
+                    <SelectItem key={division.id} value={division.id}>
+                      {division.nameLocal}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                onValueChange={handleDistrictChange}
+                value={districtId}
+                disabled={!divisionId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="জেলা" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district.id} value={district.id}>
+                      {district.nameLocal}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                onValueChange={handleUpazilaChange}
+                value={field.value}
+                disabled={!districtId}
+              >
+                <SelectTrigger
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue placeholder="উপজেলা" />
+                </SelectTrigger>
+                <SelectContent>
+                  {upazilas.map((upazila) => (
+                    <SelectItem key={upazila.id} value={upazila.id}>
+                      {upazila.nameLocal}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         )}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <ControlledField
-          control={form.control}
-          name="addressLine1"
-          label="ঠিকানা লাইন ১ *"
-          className="sm:col-span-2"
-          render={({ field, fieldState }) => (
-            <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder="বাড়ি/রোড নম্বর, এলাকার নাম" />
-          )}
-        />
-       
-      </div>
+      <ControlledField
+        control={form.control}
+        name="addressLine1"
+        label="ঠিকানা লাইন ১ *"
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            id={field.name}
+            aria-invalid={fieldState.invalid}
+            placeholder="বাড়ি/রোড নম্বর, এলাকার নাম"
+          />
+        )}
+      />
 
       <Separator />
 
@@ -75,16 +177,26 @@ export function StepLocationContact() {
           name="phone"
           label="মোবাইল নম্বর *"
           render={({ field, fieldState }) => (
-            <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder="01712345678" />
+            <Input
+              {...field}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder="01712345678"
+            />
           )}
         />
-       
+
         <ControlledField
           control={form.control}
           name="whatsapp"
           label="হোয়াটসঅ্যাপ"
           render={({ field, fieldState }) => (
-            <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder="ঐচ্ছিক" />
+            <Input
+              {...field}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder="ঐচ্ছিক"
+            />
           )}
         />
         <ControlledField
@@ -93,7 +205,12 @@ export function StepLocationContact() {
           label="ব্যবসায়িক ইমেইল"
           description="এটি লগইন ইমেইল থেকে ভিন্ন হতে পারে"
           render={({ field, fieldState }) => (
-            <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder="info@example.com" />
+            <Input
+              {...field}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder="info@example.com"
+            />
           )}
         />
         <ControlledField
@@ -102,7 +219,12 @@ export function StepLocationContact() {
           label="ওয়েবসাইট"
           className="sm:col-span-2"
           render={({ field, fieldState }) => (
-            <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder="https://" />
+            <Input
+              {...field}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder="https://"
+            />
           )}
         />
       </div>
@@ -114,14 +236,21 @@ export function StepLocationContact() {
         <p className="mt-1 text-xs text-[#8A8371]">সবগুলো ঐচ্ছিক — যা আছে তা দিন</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        {(["facebook", "instagram", "youtube", "linkedin", "tiktok"] as const).map((key) => (
+        {(
+          ["facebook", "instagram", "youtube", "linkedin", "tiktok"] as const
+        ).map((key) => (
           <ControlledField
             key={key}
             control={form.control}
             name={`socialLinks.${key}`}
             label={<span className="capitalize">{key}</span>}
             render={({ field, fieldState }) => (
-              <Input {...field} id={field.name} aria-invalid={fieldState.invalid} placeholder={`https://${key}.com/...`} />
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                placeholder={`https://${key}.com/...`}
+              />
             )}
           />
         ))}

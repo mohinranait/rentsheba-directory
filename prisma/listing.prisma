@@ -26,6 +26,15 @@ model Listing {
   priceRange      String?
   areaServed      String?
 
+  // Opening hours (array of { day, isClosed, openTime, closeTime })
+  openingHours Json?
+
+  // Services & amenities (array of { type, name })
+  features Json?
+
+  // FAQs (array of { question, answer })
+  faqs Json?
+
   // Social media
   socialLinks Json?
 
@@ -69,8 +78,16 @@ model Listing {
   locationId  String?
   location   Location? @relation( fields: [locationId], references: [id])
 
-  // Relations
-  // images      Media[]
+  // Logo
+  logoId            String? @unique
+  logo              Media? @relation(  "ListingLogo", fields: [logoId], references: [id],  onDelete: SetNull )
+
+  // Thumbnail
+  thumbnailId       String? @unique
+  thumbnail         Media? @relation( "ListingThumbnail", fields: [thumbnailId], references: [id],  onDelete: SetNull )
+
+  // Gallery
+  gallery           Media[] @relation("ListingGallery")
 
   favorites   Favorite[]
 
@@ -80,9 +97,5 @@ model Listing {
   @@index([ownerId])
 
   @@index([categoryId])
-  // @@index([locationId])
-
-  // @@index([categoryId, locationId])
-
-  // @@index([status, categoryId, locationId])
+  @@index([locationId])
 }
