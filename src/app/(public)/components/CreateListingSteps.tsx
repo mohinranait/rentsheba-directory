@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button'
 
 const CreateListingSteps = () => {
   return (
-    <section id="how" className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-      <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+    <section id="how" className=" z-10 relative bg-white/50 py-20">
+     <div className='mx-auto  max-w-7xl px-5  lg:px-8'>
+       <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
             Simple by design
@@ -40,7 +41,7 @@ const CreateListingSteps = () => {
           ].map(([n, t, d]) => (
             <div
               key={n}
-              className="rounded-2xl border border-[#e1e9e3] bg-white p-5"
+              className="rounded-2xl border border-[#e1e9e3] bg-white  p-5"
             >
               <span className="text-sm font-bold text-[#7aa08f]">
                 {n}
@@ -51,6 +52,7 @@ const CreateListingSteps = () => {
           ))}
         </div>
       </div>
+     </div>
     </section>
   )
 }

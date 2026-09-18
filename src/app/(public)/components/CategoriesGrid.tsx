@@ -17,7 +17,7 @@ const CategoriesGrid = () => {
         <a
           href="#explore"
           key={name}
-          className="group rounded-2xl border border-[#e1e9e3] bg-white p-5 transition hover:-translate-y-1 hover:border-[#b9d4c5] hover:shadow-[0_12px_30px_rgba(43,92,67,.08)]"
+          className="group rounded-2xl border border-[#e1e9e3] bg-white p-5 transition  hover:border-[#b9d4c5] hover:shadow-[0_12px_30px_rgba(43,92,67,.08)]"
         >
           <div className="flex items-center justify-between">
             <span className="grid size-11 place-items-center rounded-xl bg-[#edf5ef] text-xl text-[#3b7b63]">

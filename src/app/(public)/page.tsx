@@ -1,9 +1,11 @@
 'use client'
 
 
-import { ArrowRight,  ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+
 import ListingCard from '@/components/common/ListingCard'
 import SubscriptionSection from '@/components/common/SubscriptionSection'
+import GridBackdrop from '@/components/GridBackdrop'
 import { Button } from '@/components/ui/button'
 import CategoriesGrid from './components/CategoriesGrid'
 import CreateListingSteps from './components/CreateListingSteps'
@@ -16,26 +18,29 @@ const listings = [
 ]
 export default function Home() {
   return (
-    <>
+    <div className=" z-10">
+      <GridBackdrop />
       <HeroSection />
-      <section id="categories" className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
-              Browse by category
-            </p>
-            <h2 className="mt-3 text-3xl font-bold tracking-[-.045em] text-[#173f34] sm:text-4xl">
-              Something for every need
-            </h2>
+      <section id="categories" className="relative bg-white/50 py-20 ">
+        <div className=' mx-auto max-w-7xl px-5 lg:px-8'>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
+                Browse by category
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-[-.045em] text-[#173f34] sm:text-4xl">
+                Something for every need
+              </h2>
+            </div>
+            <a href="#explore" className="text-sm font-bold text-[#36705e]">
+              View all categories <ArrowRight className="ml-1 inline size-4" />
+            </a>
           </div>
-          <a href="#explore" className="text-sm font-bold text-[#36705e]">
-            View all categories <ArrowRight className="ml-1 inline size-4" />
-          </a>
+          <CategoriesGrid />
         </div>
-        <CategoriesGrid />
       </section>
 
-      <section id="explore" className="border-y border-[#e2eae4] bg-white">
+      <section id="explore" className="relative border-y border-[#e2eae4]/70 bg-white/40 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
@@ -47,19 +52,19 @@ export default function Home() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] text-[#789087]">
+              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] bg-white/50 text-[#789087] backdrop-blur-sm">
                 <ChevronLeft className="size-4" />
               </Button>
-              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] text-[#789087]">
+              <Button className="grid size-9 place-items-center rounded-full border border-[#dfe8e3] bg-white/50 text-[#789087] backdrop-blur-sm">
                 <ChevronRight className="size-4" />
               </Button>
             </div>
           </div>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             {listings.length ? (
-              listings.map((item) => <ListingCard   key={item.name} item={item} />)
+              listings.map((item) => <ListingCard key={item.name} item={item} />)
             ) : (
-              <div className="col-span-3 rounded-2xl border border-dashed border-[#cbdcd1] p-10 text-center text-sm text-[#6d887d]">
+              <div className="col-span-3 rounded-2xl border border-dashed border-[#cbdcd1] bg-white/40 p-10 text-center text-sm text-[#6d887d] backdrop-blur-sm">
                 No listings match your search yet. Try another location or
                 keyword.
               </div>
@@ -68,12 +73,12 @@ export default function Home() {
         </div>
       </section>
 
-     <CreateListingSteps />
+      <CreateListingSteps />
 
 
       <SubscriptionSection />
 
 
-    </>
+    </div>
   )
 }

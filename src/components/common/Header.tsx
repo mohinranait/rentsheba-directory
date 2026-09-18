@@ -5,10 +5,10 @@ import { Button } from '../ui/button'
 
 const Header = () => {
   return (
-    <header className="sticky top-0 z-30 border-b border-[#dfe8e3] bg-[#f8faf9]/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-[#dfe8e3] bg-white/50 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-        <a
-          href="#top"
+        <Link
+          href="/"
           className="flex items-center gap-2.5"
           aria-label="directory home"
         >
@@ -18,7 +18,7 @@ const Header = () => {
           <span className="text-xl font-bold tracking-[-0.04em]">
             directory<span className="text-[#4c796b]">.</span>
           </span>
-        </a>
+        </Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-[#557068] md:flex">
           <a href="#explore" className="hover:text-[#133f35]">
             Explore
