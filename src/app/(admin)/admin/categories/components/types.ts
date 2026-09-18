@@ -1,9 +1,17 @@
+export type CategoryNodeImage = {
+  id: string;
+  url: string;
+  secure_url: string;
+  alt: string | null;
+};
+
 export type CategoryNode = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  image: string | null;
+  imageId: string | null;
+  image: CategoryNodeImage | null;
   parentId: string | null;
   isActive: boolean;
   createdAt: string;

@@ -20,4 +20,9 @@ export default {
 	smtp_pass: process.env.SMTP_PASS,
 	email_sender: process.env.EMAIL_SENDER,
 
+
+	cloudinary_name: process.env.CLOUDINARY_NAME,
+	cloudinary_key: process.env.CLOUDINARY_KEY,
+	cloudinary_SECRET: process.env.CLOUDINARY_SECRET,
+
 };

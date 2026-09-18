@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { categoryFormSchema } from "@/lib/schemas/category-schema";
 import { slugify, uniqueSlug } from "@/lib/slug";
+import { uploadToCloudinary } from "@/utils/upload-image";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
+
+const imageSelect = {
+  select: {
+    id: true,
+    url: true,
+    secure_url: true,
+    alt: true,
+  },
+} as const;
 
 async function getDescendantIds(id: string): Promise<string[]> {
   const all = await prisma.category.findMany({
@@ -47,6 +57,7 @@ export async function GET(_request: Request, context: RouteContext) {
       where: { id },
       include: {
         parent: { select: { id: true, name: true } },
+        image: imageSelect,
         _count: { select: { children: true } },
       },
     });
@@ -96,9 +107,23 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const body = await request.json();
+    const formData = await request.formData();
 
-    const parsed = categoryFormSchema.safeParse(body);
+    const name = String(formData.get("name") ?? "");
+    const slug = String(formData.get("slug") ?? "");
+    const description = String(formData.get("description") ?? "");
+    const parentId = String(formData.get("parentId") ?? "");
+    const isActive = formData.get("isActive") === "true";
+    const removeImage = formData.get("removeImage") === "true";
+    const image = formData.get("image");
+
+    const parsed = categoryFormSchema.safeParse({
+      name,
+      slug,
+      description,
+      parentId,
+      isActive,
+    });
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -111,7 +136,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const { name, slug, description, image, parentId, isActive } = parsed.data;
+    const { name: categoryName, slug: categorySlug } = parsed.data;
 
     const nextParentId = parentId || null;
 
@@ -153,7 +178,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
-    const suppliedSlug = slug.trim() || slugify(name);
+    const suppliedSlug = categorySlug.trim() || slugify(categoryName);
     const finalSlug =
       suppliedSlug === existing.slug
         ? existing.slug
@@ -166,16 +191,39 @@ export async function PATCH(request: Request, context: RouteContext) {
               .then((found) => found !== null),
           );
 
+    let imageId = existing.imageId;
+
+    if (removeImage) {
+      imageId = null;
+    } else if (image instanceof File) {
+      const { secure_url, public_id, extension, size } =
+        await uploadToCloudinary(image);
+
+      const media = await prisma.media.create({
+        data: {
+          url: secure_url,
+          alt: categoryName,
+          public_id,
+          extension,
+          secure_url,
+          size: String(size),
+        },
+      });
+
+      imageId = media.id;
+    }
+
     const category = await prisma.category.update({
       where: { id },
       data: {
-        name: name.trim(),
+        name: categoryName.trim(),
         slug: finalSlug,
-        description: description?.trim() || null,
-        image: image?.trim() || null,
+        description: description.trim() || null,
+        imageId,
         parentId: nextParentId,
-        isActive: isActive ?? existing.isActive,
+        isActive,
       },
+      include: { image: imageSelect },
     });
 
     return NextResponse.json({

@@ -6,5 +6,7 @@ model Media {
   extension   String
   secure_url  String
   size        String
+
+  category    Category?   
   createdAt   DateTime @default(now())
 }

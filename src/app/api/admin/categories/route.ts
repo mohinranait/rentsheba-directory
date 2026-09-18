@@ -2,14 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { categoryFormSchema } from "@/lib/schemas/category-schema";
 import { slugify, uniqueSlug } from "@/lib/slug";
+import { uploadToCloudinary } from "@/utils/upload-image";
 
-// Generic Prisma category row (flat)
+export type CategoryImage = {
+  id: string;
+  url: string;
+  secure_url: string;
+  alt: string | null;
+};
+
 type CategoryRow = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  image: string | null;
+  imageId: string | null;
+  image: CategoryImage | null;
   parentId: string | null;
   isActive: boolean;
   createdAt: Date;
@@ -55,13 +63,23 @@ function buildTree(rows: CategoryRow[]): CategoryNode[] {
   return roots;
 }
 
+const imageSelect = {
+  select: {
+    id: true,
+    url: true,
+    secure_url: true,
+    alt: true,
+  },
+} as const;
+
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
+      include: { image: imageSelect },
       orderBy: { createdAt: "asc" },
     });
 
-    const tree = buildTree(categories as CategoryRow[]);
+    const tree = buildTree(categories as unknown as CategoryRow[]);
 
     return NextResponse.json({
       success: true,
@@ -80,11 +98,40 @@ export async function GET() {
   }
 }
 
+async function uploadAndCreateMedia(image: File, alt: string) {
+  const { secure_url, public_id, extension, size } =
+    await uploadToCloudinary(image);
+
+  return prisma.media.create({
+    data: {
+      url: secure_url,
+      alt,
+      public_id,
+      extension,
+      secure_url,
+      size: String(size),
+    },
+  });
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const formData = await request.formData();
 
-    const parsed = categoryFormSchema.safeParse(body);
+    const name = String(formData.get("name") ?? "");
+    const slug = String(formData.get("slug") ?? "");
+    const description = String(formData.get("description") ?? "");
+    const parentId = String(formData.get("parentId") ?? "");
+    const isActive = formData.get("isActive") === "true";
+    const image = formData.get("image");
+
+    const parsed = categoryFormSchema.safeParse({
+      name,
+      slug,
+      description,
+      parentId,
+      isActive,
+    });
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -97,7 +144,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, slug, description, image, parentId, isActive } = parsed.data;
+    const { name: categoryName, slug: categorySlug } = parsed.data;
 
     if (parentId) {
       const parent = await prisma.category.findUnique({
@@ -115,21 +162,28 @@ export async function POST(request: Request) {
       }
     }
 
-    const generatedSlug = slug.trim() || slugify(name);
+    const generatedSlug = categorySlug.trim() || slugify(categoryName);
     const finalSlug = await uniqueSlug(generatedSlug, (candidate) =>
       prisma.category
         .findUnique({ where: { slug: candidate }, select: { id: true } })
         .then((found) => found !== null),
     );
 
+    let imageId: string | null = null;
+
+    if (image instanceof File) {
+      const media = await uploadAndCreateMedia(image, categoryName);
+      imageId = media.id;
+    }
+
     const category = await prisma.category.create({
       data: {
-        name: name.trim(),
+        name: categoryName.trim(),
         slug: finalSlug,
-        description: description?.trim() || null,
-        image: image?.trim() || null,
+        description: description.trim() || null,
+        imageId,
         parentId: parentId || null,
-        isActive: isActive ?? true,
+        isActive,
       },
     });
 

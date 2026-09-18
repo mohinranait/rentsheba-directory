@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FolderPlus, Loader2 } from "lucide-react";
+import { FolderPlus, ImagePlus, Loader2, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import {
   categoryFormSchema,
 } from "@/lib/schemas/category-schema";
 import { slugify } from "@/lib/slug";
+import { cn } from "@/lib/utils";
 import type { CategoryNode, CategoryOption } from "./types";
 
 type CategoryDialogProps = {
@@ -44,9 +45,9 @@ const defaultValues: CategoryFormValues = {
   name: "",
   slug: "",
   description: "",
-  image: "",
   parentId: "",
   isActive: true,
+  image: null,
 };
 
 export function CategoryDialog({
@@ -60,6 +61,7 @@ export function CategoryDialog({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
+  const [removeImage, setRemoveImage] = useState(false);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
@@ -67,6 +69,12 @@ export function CategoryDialog({
   });
 
   const nameValue = form.watch("name");
+  const imageValue = form.watch("image");
+
+  const imagePreview =
+    imageValue instanceof File ? URL.createObjectURL(imageValue) : null;
+
+  const existingImageUrl = editing?.image?.secure_url ?? null;
 
   useEffect(() => {
     if (!open) {
@@ -75,15 +83,16 @@ export function CategoryDialog({
 
     setSubmitError(null);
     setSlugTouched(!!editing?.slug);
+    setRemoveImage(false);
 
     if (editing) {
       form.reset({
         name: editing.name,
         slug: editing.slug,
         description: editing.description ?? "",
-        image: editing.image ?? "",
         parentId: editing.parentId ?? "",
         isActive: editing.isActive,
+        image: null,
       });
     } else {
       form.reset({
@@ -100,10 +109,31 @@ export function CategoryDialog({
   }, [nameValue, slugTouched, form]);
 
   const isChildForm = !editing && !!defaultParentId;
+  const showExistingImage = !!existingImageUrl && !imageValue && !removeImage;
 
   async function onSubmit(values: CategoryFormValues) {
     setSubmitting(true);
     setSubmitError(null);
+
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("slug", values.slug);
+
+    if (values.description) {
+      formData.append("description", values.description);
+    }
+    if (values.parentId) {
+      formData.append("parentId", values.parentId);
+    }
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
+    }
+    formData.append("isActive", String(values.isActive ?? true));
+
+    if (removeImage) {
+      formData.append("removeImage", "true");
+    }
 
     try {
       const res = await fetch(
@@ -112,11 +142,7 @@ export function CategoryDialog({
           : "/api/admin/categories",
         {
           method: editing ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...values,
-            parentId: values.parentId || undefined,
-          }),
+          body: formData,
         },
       );
 
@@ -198,37 +224,47 @@ export function CategoryDialog({
             name="parentId"
             label="Parent category"
             description="Pick a parent to nest this category under it."
-            render={({ field, fieldState }) => (
-              <Select
-                value={field.value || "root"}
-                onValueChange={(value) =>
-                  field.onChange(value === "root" ? "" : value)
-                }
-              >
-                <SelectTrigger
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  className="w-full"
+            render={({ field, fieldState }) => {
+              const selectedParent = options.find(
+                (option) => option.id === field.value,
+              );
+
+              return (
+                <Select
+                  value={field.value || "root"}
+                  onValueChange={(value) =>
+                    field.onChange(value === "root" ? "" : value)
+                  }
                 >
-                  <SelectValue placeholder="Select a parent category" />
-                </SelectTrigger>
+                  <SelectTrigger
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    className="w-full"
+                  >
+                    <SelectValue>
+                      {selectedParent?.name ?? "No parent (top level)"}
+                    </SelectValue>
+                  </SelectTrigger>
 
-                <SelectContent className="max-h-72">
-                  <SelectItem value="root">No parent (top level)</SelectItem>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="root">No parent (top level)</SelectItem>
 
-                  {options.map((option) => (
-                    <SelectItem
-                      key={option.id}
-                      value={option.id}
-                      className="font-normal"
-                    >
-                      {"\u00A0".repeat(option.depth * 2)}
-                      {option.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                    {options
+                      .filter((option) => option.id !== editing?.id)
+                      .map((option) => (
+                        <SelectItem
+                          key={option.id}
+                          value={option.id}
+                          className="font-normal"
+                        >
+                          {"-".repeat(option.depth * 1)}
+                          {option.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              );
+            }}
           />
 
           <ControlledField
@@ -250,15 +286,85 @@ export function CategoryDialog({
           <ControlledField
             control={form.control}
             name="image"
-            label="Image URL"
-            description="Optional cover image for the category."
+            label="Category image"
+            description="Optional cover image — uploaded and stored securely."
             render={({ field, fieldState }) => (
-              <Input
-                {...field}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                placeholder="https://…"
-              />
+              <div className="space-y-1.5">
+                {showExistingImage ? (
+                  <div className="relative overflow-hidden rounded-lg border border-border">
+                    {/* biome-ignore lint/performance/noImgElement: category media thumbnail */}
+                    <img
+                      src={existingImageUrl ?? ""}
+                      alt=""
+                      className="aspect-[16/6] w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRemoveImage(true)}
+                      className="absolute top-2 right-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-black/80"
+                    >
+                      <Trash2 className="size-3.5" />
+                      Remove image
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-input bg-muted/50 transition-colors hover:border-primary/50 hover:bg-muted",
+                      fieldState.invalid && "border-destructive/60",
+                    )}
+                  >
+                    <label
+                      htmlFor="category-image-file"
+                      className="flex w-full cursor-pointer items-center justify-center"
+                    >
+                      {imagePreview ? (
+                        // biome-ignore lint/performance/noImgElement: selected file preview
+                        <img
+                          src={imagePreview}
+                          alt=""
+                          className="aspect-[16/6] w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-1.5 text-muted-foreground">
+                          <ImagePlus className="size-6" />
+                          <span className="text-xs">
+                            {removeImage
+                              ? "Choose an image to keep (current will be replaced)"
+                              : "Click to upload a category image"}
+                          </span>
+                        </div>
+                      )}
+                    </label>
+
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(null)}
+                        className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80"
+                        aria-label="Remove selected image"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
+
+                    <input
+                      id="category-image-file"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] ?? null;
+                        field.onChange(file);
+                        if (file) {
+                          setRemoveImage(false);
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             )}
           />
 

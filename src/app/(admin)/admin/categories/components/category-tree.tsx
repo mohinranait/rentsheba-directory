@@ -67,10 +67,10 @@ export function CategoryRow({
           </span>
         )}
 
-        {category.image ? (
+        {category.image?.secure_url ? (
           // biome-ignore lint/performance/noImgElement: small remote thumbnail avatar
           <img
-            src={category.image}
+            src={category.image.secure_url}
             alt=""
             className="size-9 shrink-0 rounded-lg object-cover"
           />

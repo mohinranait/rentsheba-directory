@@ -6,7 +6,8 @@ model Category {
 
   description String?
 
-  image       String?
+  imageId       String? @unique
+  image       Media?    @relation( fields: [imageId], references: [id], onDelete: SetNull)
 
   parentId    String?
   parent      Category?  @relation("CategoryHierarchy",fields: [parentId],  references: [id] )
@@ -17,6 +18,7 @@ model Category {
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  delatedAt   DateTime?   
 
   // listings    Listing[]
 
