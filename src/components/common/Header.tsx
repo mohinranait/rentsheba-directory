@@ -34,9 +34,11 @@ const Header = () => {
           </a>
         </nav>
         <div className="flex items-center gap-2">
+          <Link href={'/login'}>
           <Button className="hidden bg-transparent rounded-lg px-3 py-2 text-sm font-semibold text-[#46645a] hover:bg-white md:block">
             Log in
           </Button>
+          </Link>
           <Link href={'/listing/add'}>
           <Button className="rounded-lg bg-[#133f35] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1d5548]">
             Add your listing <ArrowRight className="ml-1 inline size-4" />

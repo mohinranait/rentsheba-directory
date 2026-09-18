@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-
+// Create new listing
 export async function POST(request: Request) {
   try {
-
-   
-
     return NextResponse.json(
       {
         success: true,
