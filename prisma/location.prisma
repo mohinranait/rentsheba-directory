@@ -1,25 +1,26 @@
 model Location {
-  id          String       @id @default(uuid())
+  id        String       @id
+  nameEn    String
+  nameLocal String
+  slug      String       @unique
 
-  name        String
-  slug        String
+  lat       Decimal?     @db.Decimal(10, 7)
+  lon       Decimal?     @db.Decimal(10, 7)
+  postalCode String?
 
-  type        LocationType
+  type      LocationType
 
-  parentId    String?
+  parentId   String?
+  parent     Location?  @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children   Location[] @relation("LocationHierarchy")
 
-  parent      Location?    @relation( "LocationHierarchy",  fields: [parentId], references: [id] )
 
-  children    Location[]   @relation("LocationHierarchy")
+  listings   Listing[]
 
-  isActive    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  // listings    Listing[]
-
-  @@unique([slug, parentId])
   @@index([parentId])
   @@index([type])
 }
+

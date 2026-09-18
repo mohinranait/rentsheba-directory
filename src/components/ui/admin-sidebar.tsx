@@ -99,21 +99,10 @@ const mainMenu: MenuItem[] = [
     icon: MapPinned,
     children: [
       {
-        title: "All Locations",
-        href: "/admin/locations",
-      },
-      {
         title: "Divisions",
-        href: "/admin/locations/divisions",
+        href: "/admin/divisions",
       },
-      {
-        title: "Districts",
-        href: "/admin/locations/districts",
-      },
-      {
-        title: "Upazilas",
-        href: "/admin/locations/upazilas",
-      },
+     
     ],
   },
   {

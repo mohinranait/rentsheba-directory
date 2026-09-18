@@ -62,12 +62,12 @@ model Listing {
   owner       User          @relation( fields: [ownerId], references: [id],  onDelete: Cascade )
 
   // Category
-  // categoryId  String
-  // category    Category      @relation( fields: [categoryId], references: [id] )
+  categoryId  String?
+  category    Category?      @relation( fields: [categoryId], references: [id] )
 
   // Location
-  // locationId  String
-  // location    Location      @relation( fields: [locationId], references: [id] )
+  locationId  String?
+  location   Location? @relation( fields: [locationId], references: [id])
 
   // Relations
   // images      Media[]
@@ -79,7 +79,7 @@ model Listing {
   @@index([verificationStatus])
   @@index([ownerId])
 
-  // @@index([categoryId])
+  @@index([categoryId])
   // @@index([locationId])
 
   // @@index([categoryId, locationId])

@@ -11,7 +11,6 @@ model Category {
 
   parentId    String?
   parent      Category?  @relation("CategoryHierarchy",fields: [parentId],  references: [id] )
-
   children    Category[] @relation("CategoryHierarchy")
 
   isActive    Boolean    @default(true)
@@ -20,7 +19,7 @@ model Category {
   updatedAt   DateTime   @updatedAt
   delatedAt   DateTime?   
 
-  // listings    Listing[]
+  listings    Listing[]
 
   @@index([parentId])
   @@index([slug])
