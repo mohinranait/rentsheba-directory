@@ -38,7 +38,12 @@ export const basicsSchema = z.object({
     .trim()
     .min(3, "প্রতিষ্ঠানের নাম কমপক্ষে ৩ অক্ষরের হতে হবে")
     .max(120, "নাম ১২০ অক্ষরের বেশি হতে পারবে না"),
-  tagline: z.string().trim().max(100, "ট্যাগলাইন ১০০ অক্ষরের বেশি হতে পারবে না").optional().or(z.literal("")),
+  tagline: z
+    .string()
+    .trim()
+    .max(100, "ট্যাগলাইন ১০০ অক্ষরের বেশি হতে পারবে না")
+    .optional()
+    .or(z.literal("")),
   categoryId: z.string().min(1, "একটি ক্যাটাগরি বাছাই করুন"),
   shortDescription: z
     .string()
@@ -94,10 +99,10 @@ export const openingHourSchema = z
     openTime: z.string().optional().or(z.literal("")),
     closeTime: z.string().optional().or(z.literal("")),
   })
-  .refine(
-    (row) => row.isClosed || (!!row.openTime && !!row.closeTime),
-    { message: "খোলা ও বন্ধের সময় দিন, অথবা 'বন্ধ' নির্বাচন করুন", path: ["openTime"] }
-  );
+  .refine((row) => row.isClosed || (!!row.openTime && !!row.closeTime), {
+    message: "খোলা ও বন্ধের সময় দিন, অথবা 'বন্ধ' নির্বাচন করুন",
+    path: ["openTime"],
+  });
 
 export const businessDetailsSchema = z.object({
   establishedYear: z
@@ -137,8 +142,14 @@ const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const imageFile = (requiredMessage = "একটি ছবি নির্বাচন করুন") =>
   z
     .instanceof(File, { message: requiredMessage })
-    .refine((f) => f.size <= MAX_FILE_SIZE_MB * 1024 * 1024, `ছবির আকার ${MAX_FILE_SIZE_MB}MB এর কম হতে হবে`)
-    .refine((f) => ACCEPTED_TYPES.includes(f.type), "শুধু JPG, PNG অথবা WEBP ছবি গ্রহণযোগ্য");
+    .refine(
+      (f) => f.size <= MAX_FILE_SIZE_MB * 1024 * 1024,
+      `ছবির আকার ${MAX_FILE_SIZE_MB}MB এর কম হতে হবে`,
+    )
+    .refine(
+      (f) => ACCEPTED_TYPES.includes(f.type),
+      "শুধু JPG, PNG অথবা WEBP ছবি গ্রহণযোগ্য",
+    );
 
 export const photosSchema = z.object({
   logo: imageFile().optional().nullable(),
@@ -220,7 +231,13 @@ export const defaultListingValues: Partial<ListingFormValues> = {
   email: "",
   website: "",
   whatsapp: "",
-  socialLinks: { facebook: "", instagram: "", youtube: "", linkedin: "", tiktok: "" },
+  socialLinks: {
+    facebook: "",
+    instagram: "",
+    youtube: "",
+    linkedin: "",
+    tiktok: "",
+  },
   establishedYear: undefined,
   priceRange: "",
   areaServed: "",

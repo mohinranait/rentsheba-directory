@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DeleteListingDialog } from "./components/delete-listing-dialog";
 
 type ListingStatus =
   | "PENDING"
@@ -155,6 +157,9 @@ export default function AllListingsPage() {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
   const [selected, setSelected] = React.useState<string[]>([]);
+  const [deleteTarget, setDeleteTarget] = React.useState<ListingItem | null>(
+    null,
+  );
 
   const [items, setItems] = React.useState<ListingItem[]>([]);
   const [meta, setMeta] = React.useState({
@@ -197,7 +202,7 @@ export default function AllListingsPage() {
           setCategories(data.data);
         }
       })
-      .catch(() => { });
+      .catch(() => {});
 
     void fetch("/api/locations/tree")
       .then((response) => response.json())
@@ -223,7 +228,7 @@ export default function AllListingsPage() {
           setLocationOptions(options);
         }
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
@@ -332,7 +337,6 @@ export default function AllListingsPage() {
   const rangeStart = meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
   const rangeEnd = Math.min(meta.page * meta.pageSize, meta.total);
 
-
   const selectedCategory = categoryOptions.find(
     (option) => option.id === categoryId,
   );
@@ -354,7 +358,7 @@ export default function AllListingsPage() {
           </p>
         </div>
 
-        <Button>
+        <Button render={<Link href="/admin/listings/add" />}>
           <Plus className="mr-2 size-4" />
           Add Listing
         </Button>
@@ -430,15 +434,12 @@ export default function AllListingsPage() {
                 </SelectContent>
               </Select>
 
-              <Select
-                value={categoryId}
-                onValueChange={handleCategoryChange}
-              >
+              <Select value={categoryId} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-45">
                   <SelectValue placeholder="All Categories">
                     {categoryId === "all"
                       ? "All Categories"
-                      : selectedCategory?.label ?? "All Categories"}
+                      : (selectedCategory?.label ?? "All Categories")}
                   </SelectValue>
                 </SelectTrigger>
 
@@ -453,15 +454,12 @@ export default function AllListingsPage() {
                 </SelectContent>
               </Select>
 
-              <Select
-                value={locationId}
-                onValueChange={handleLocationChange}
-              >
+              <Select value={locationId} onValueChange={handleLocationChange}>
                 <SelectTrigger className="w-45">
                   <SelectValue placeholder="All Locations">
                     {locationId === "all"
                       ? "All Locations"
-                      : selectedLocation?.label ?? "All Locations"}
+                      : (selectedLocation?.label ?? "All Locations")}
                   </SelectValue>
                 </SelectTrigger>
 
@@ -580,6 +578,7 @@ export default function AllListingsPage() {
                     listing={listing}
                     selected={selected.includes(listing.id)}
                     onToggle={() => toggleListing(listing.id)}
+                    onDelete={() => setDeleteTarget(listing)}
                   />
                 ))
               )}
@@ -671,6 +670,16 @@ export default function AllListingsPage() {
           </div>
         </div>
       </div>
+
+      <DeleteListingDialog
+        open={deleteTarget !== null}
+        listingTitle={deleteTarget?.title ?? ""}
+        listingSlug={deleteTarget?.slug ?? ""}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onDeleted={() => void load()}
+      />
     </div>
   );
 }
@@ -679,10 +688,12 @@ function ListingRow({
   listing,
   selected,
   onToggle,
+  onDelete,
 }: {
   listing: ListingItem;
   selected: boolean;
   onToggle: () => void;
+  onDelete: () => void;
 }) {
   const statusInfo =
     statusConfig[listing.verificationStatus] ?? statusConfig.DRAFT;
@@ -796,20 +807,30 @@ function ListingRow({
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+          <DropdownMenuContent align="end" className={'w-40'}>
+            <DropdownMenuItem
+            className={'cursor-pointer'}
+              render={
+                <Link href={`/admin/listings/edit/${listing.slug}`} target="_blank" />
+              }
+            >
               <Eye className="mr-2 size-4" />
               View listing
             </DropdownMenuItem>
 
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              className={'cursor-pointer'}
+              render={
+                <Link href={`/admin/listings/add?slug=${listing.slug}`} />
+              }
+            >
               <Pencil className="mr-2 size-4" />
               Edit listing
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuItem   className={'cursor-pointer'} variant="destructive" onClick={onDelete}>
               <Trash2 className="mr-2 size-4" />
               Delete listing
             </DropdownMenuItem>
