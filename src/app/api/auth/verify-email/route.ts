@@ -143,6 +143,15 @@ export async function POST(request: Request) {
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
 
+    // Public marker so the client header knows it should call /api/me
+    // (avoids making the call when the visitor is logged out).
+    cookieStore.set("auth_status", "1", {
+      httpOnly: false,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
     return NextResponse.json(
       {
         success: true,
