@@ -1,4 +1,11 @@
-import { ArrowRight, Building2, Clock3, Plus, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Clock3,
+  Pencil,
+  Plus,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -184,6 +191,12 @@ export default async function DashboardPage() {
                     <Star className="size-3.5 fill-[#e5b34f] text-[#e5b34f]" />{" "}
                     {item.averageRating.toFixed(1)}
                   </span>
+                  <Link
+                    href={`/listing/${item.slug}/edit`}
+                    className="inline-flex items-center gap-1 font-bold text-[#36705e] hover:text-[#133f35]"
+                  >
+                    <Pencil className="size-3.5" /> Edit
+                  </Link>
                   <Link
                     href={`/listing/${item.slug}`}
                     className="inline-flex items-center gap-1 font-bold text-[#36705e] hover:text-[#133f35]"

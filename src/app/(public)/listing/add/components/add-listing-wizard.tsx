@@ -105,9 +105,7 @@ export function AddListingWizard() {
     }
   };
 
-  const err = form.formState.errors;
-  console.log({err});
-  
+
 
   const handleNext = async () => {
     const fieldsToValidate = STEP_FIELDS[currentStep];
@@ -305,7 +303,7 @@ export function AddListingWizard() {
                 <Button
                   type="button"
                   onClick={handleNext}
-                  className="bg-[#1F4D3D] hover:bg-[#173B2F]"
+                  className="bg-[#1F4D3D] text-white hover:bg-[#173B2F]"
                 >
                   পরবর্তী
                   <ArrowRight className="ml-1.5 h-4 w-4" />
