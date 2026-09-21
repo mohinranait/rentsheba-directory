@@ -46,6 +46,7 @@ const detailSelect = {
   socialLinks: true,
   isFeatured: true,
   isClaimed: true,
+  isHeroListing: true,
   verificationStatus: true,
   verifiedAt: true,
   rejectionReason: true,

@@ -65,6 +65,7 @@ type ListingItem = {
   verificationStatus: ListingStatus;
   isFeatured: boolean;
   isClaimed: boolean;
+  isHeroListing: boolean;
   viewCount: number | null;
   averageRating: number | null;
   reviewCount: number | null;
@@ -735,6 +736,15 @@ function ListingRow({
                   className="hidden shrink-0 sm:inline-flex"
                 >
                   Featured
+                </Badge>
+              )}
+
+              {listing.isHeroListing && (
+                <Badge
+                  variant="secondary"
+                  className="hidden shrink-0 border-[#d9efb8] bg-[#f4fbdf] text-[#5c7d1f] sm:inline-flex"
+                >
+                  Home
                 </Badge>
               )}
             </div>

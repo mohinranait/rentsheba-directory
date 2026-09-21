@@ -1,6 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
-
 import SubscriptionSection from "@/components/common/SubscriptionSection";
 import GridBackdrop from "@/components/GridBackdrop";
 import CategoriesGrid from "./components/CategoriesGrid";

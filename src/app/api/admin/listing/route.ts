@@ -105,6 +105,7 @@ export async function GET(request: NextRequest) {
           verificationStatus: true,
           isFeatured: true,
           isClaimed: true,
+          isHeroListing: true,
           viewCount: true,
           averageRating: true,
           reviewCount: true,

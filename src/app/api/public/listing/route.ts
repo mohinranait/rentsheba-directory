@@ -63,6 +63,7 @@ export type PublicListingResponse = {
 //   category   Category slug (also accepts `categoryId`)
 //   locationId Restrict to a location and all of its descendants
 //   featured   "true" filters to featured listings only
+//   hero       "true" filters to listings chosen by admins for the home hero
 //   sortBy     latest (default) | featured | popular | rating
 //   page       1-based page number (default: 1)
 //   pageSize   Items per page (default: 10, max: 48)
@@ -97,7 +98,7 @@ export async function GET(request: Request) {
       Math.max(
         1,
         Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE) ||
-        DEFAULT_PAGE_SIZE,
+          DEFAULT_PAGE_SIZE,
       ),
     );
 
@@ -106,51 +107,54 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get("categoryId")?.trim() ?? "";
     const locationId = searchParams.get("locationId")?.trim() ?? "";
     const featuredOnly = searchParams.get("featured") === "true";
+    const heroOnly = searchParams.get("hero") === "true";
 
     const where = {
       verificationStatus: ListingStatus.APPROVED,
       ...(search
         ? {
-          OR: [
-            { title: { contains: search, mode: "insensitive" as const } },
-            { tagline: { contains: search, mode: "insensitive" as const } },
-            {
-              shortDescription: {
-                contains: search,
-                mode: "insensitive" as const,
+            OR: [
+              { title: { contains: search, mode: "insensitive" as const } },
+              { tagline: { contains: search, mode: "insensitive" as const } },
+              {
+                shortDescription: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
               },
-            },
-            {
-              description: {
-                contains: search,
-                mode: "insensitive" as const,
+              {
+                description: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
               },
-            },
-          ],
-        }
+            ],
+          }
         : {}),
       ...(categorySlug ? { category: { slug: categorySlug as string } } : {}),
       ...(categoryId ? { categoryId } : {}),
       ...(featuredOnly ? { isFeatured: true } : {}),
+      ...(heroOnly ? { isHeroListing: true } : {}),
       ...(locationId
         ? { locationId: { in: await collectLocationIds(locationId) } }
         : {}),
     };
 
-    const orderBy =
-      searchParams.get("sortBy") === "featured"
+    const orderBy = heroOnly
+      ? { viewCount: "desc" as const }
+      : searchParams.get("sortBy") === "featured"
         ? [{ isFeatured: "desc" as const }, { viewCount: "desc" as const }]
         : searchParams.get("sortBy") === "popular"
           ? { viewCount: "desc" as const }
           : searchParams.get("sortBy") === "rating"
             ? [
-              { averageRating: "desc" as const },
-              { reviewCount: "desc" as const },
-            ]
+                { averageRating: "desc" as const },
+                { reviewCount: "desc" as const },
+              ]
             : [
-              { isFeatured: "desc" as const },
-              { publishedAt: "desc" as const },
-            ];
+                { isFeatured: "desc" as const },
+                { publishedAt: "desc" as const },
+              ];
 
     const [total, items] = await Promise.all([
       prisma.listing.count({ where }),

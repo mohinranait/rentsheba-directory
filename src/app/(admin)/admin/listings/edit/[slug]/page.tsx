@@ -414,6 +414,23 @@ export default function ReviewListingPage() {
                 disabled={reviewBusy}
               />
             </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Show on homepage</p>
+                <p className="text-xs text-muted-foreground">
+                  Appears in the hero section at the top of the home page
+                </p>
+              </div>
+
+              <Switch
+                checked={detail.isHeroListing}
+                onCheckedChange={(checked) =>
+                  patchReview({ isHeroListing: checked })
+                }
+                disabled={reviewBusy}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

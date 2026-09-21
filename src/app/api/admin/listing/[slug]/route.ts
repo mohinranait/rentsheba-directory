@@ -41,6 +41,7 @@ export type AdminListingDetail = {
   socialLinks: unknown;
   isFeatured: boolean;
   isClaimed: boolean;
+  isHeroListing: boolean;
   verificationStatus: ListingStatus;
   verifiedAt: string | null;
   rejectionReason: string | null;
@@ -105,6 +106,7 @@ export async function GET(
         socialLinks: true,
         isFeatured: true,
         isClaimed: true,
+        isHeroListing: true,
         verificationStatus: true,
         verifiedAt: true,
         rejectionReason: true,
@@ -226,6 +228,7 @@ type ReviewBody = {
   rejectionReason?: string;
   isFeatured?: boolean;
   isClaimed?: boolean;
+  isHeroListing?: boolean;
 };
 
 async function handleReviewUpdate(
@@ -261,6 +264,9 @@ async function handleReviewUpdate(
           : null,
       ...(body.isFeatured !== undefined ? { isFeatured: body.isFeatured } : {}),
       ...(body.isClaimed !== undefined ? { isClaimed: body.isClaimed } : {}),
+      ...(body.isHeroListing !== undefined
+        ? { isHeroListing: body.isHeroListing }
+        : {}),
       verifiedAt: isApproved ? now : null,
       publishedAt: isApproved ? now : null,
     },
@@ -274,6 +280,7 @@ async function handleReviewUpdate(
       rejectionReason: true,
       isFeatured: true,
       isClaimed: true,
+      isHeroListing: true,
     },
   });
 

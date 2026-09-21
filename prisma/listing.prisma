@@ -41,6 +41,7 @@ model Listing {
   // Listing flags
   isFeatured  Boolean @default(false)
   isClaimed   Boolean @default(false)
+  isHeroListing Boolean @default(false)
 
   verificationStatus ListingStatus @default(PENDING)
   verifiedAt         DateTime?
