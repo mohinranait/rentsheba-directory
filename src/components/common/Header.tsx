@@ -62,7 +62,7 @@ const Header = () => {
             <Globe2 className="size-5" />
           </span>
           <span className="text-xl font-bold tracking-[-0.04em]">
-            directory<span className="text-[#4c796b]">.</span>
+            Rentsheba<span className="text-[#4c796b]">.</span>
           </span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-[#557068] md:flex">

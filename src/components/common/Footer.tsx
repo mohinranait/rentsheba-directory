@@ -1,5 +1,4 @@
 import { Globe2 } from "lucide-react"
-import { Button } from "../ui/button"
 
 
 const Footer = () => {
@@ -10,16 +9,15 @@ const Footer = () => {
           <span className="grid size-6 place-items-center rounded-md bg-[#d3f36b]">
             <Globe2 className="size-3.5" />
           </span>{" "}
-          directory.
+          Rentsheba.
         </div>
         <div className="flex flex-wrap gap-5">
           <a href="#top">About</a>
           <a href="#pricing">Pricing</a>
           <a href="#how">Help center</a>
           <a href="#top">Privacy</a>
-          <Button className="font-semibold text-[#4b7464]">Admin preview</Button>
         </div>
-        <span>© 2025 directory. Made for local.</span>
+        <span>© 2025 directory.</span>
       </div>
     </footer>
 
