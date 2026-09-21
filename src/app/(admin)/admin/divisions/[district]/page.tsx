@@ -1,25 +1,20 @@
+import { MapIcon } from "lucide-react";
+import { getDistricts } from "@/lib/locations";
+import LocationTable from "../components/LocationTable";
 
-import { MapIcon } from 'lucide-react';
-import config from '@/lib/config';
-import LocationTable from '../components/LocationTable';
+export const dynamic = "force-dynamic";
 
-const Locations = async () => {
+const Locations = async ({
+  params,
+}: {
+  params: Promise<{ district: string }>;
+}) => {
+  const { district } = await params;
 
-  const res = await fetch(
-    `${config.app_url}/api/locations?type=DISTRICT`,
-  );
-
-
-
-  const data = await res.json();
-
-  console.log({ data });
-
+  const locations = await getDistricts(district);
 
   return (
     <div className="space-y-6">
-
-
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
@@ -38,18 +33,13 @@ const Locations = async () => {
             </div>
           </div>
         </div>
-
-
       </div>
 
       <div>
-        <LocationTable locations={data.data}  />
+        <LocationTable locations={locations} />
       </div>
-
-
-
     </div>
-  )
-}
+  );
+};
 
-export default Locations
+export default Locations;

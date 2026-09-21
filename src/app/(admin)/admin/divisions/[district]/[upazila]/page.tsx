@@ -1,20 +1,20 @@
+import { MapIcon } from "lucide-react";
+import { getUpazilas } from "@/lib/locations";
+import LocationTable from "../../components/LocationTable";
 
-import { MapIcon } from 'lucide-react';
-import config from '@/lib/config';
-import LocationTable from '../../components/LocationTable';
+export const dynamic = "force-dynamic";
 
-const UpozilasPage = async () => {
+const UpozilasPage = async ({
+  params,
+}: {
+  params: Promise<{ district: string; upazila: string }>;
+}) => {
+  const { upazila } = await params;
 
-  const res = await fetch(
-    `${config.app_url}/api/locations?type=UPAZILA`,
-  );
-
-  const data = await res.json();
+  const locations = await getUpazilas(upazila);
 
   return (
     <div className="space-y-6">
-
-
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
@@ -33,18 +33,13 @@ const UpozilasPage = async () => {
             </div>
           </div>
         </div>
-
-
       </div>
 
       <div>
-        <LocationTable locations={data.data}  />
+        <LocationTable locations={locations} />
       </div>
-
-
-
     </div>
-  )
-}
+  );
+};
 
-export default UpozilasPage
+export default UpozilasPage;
