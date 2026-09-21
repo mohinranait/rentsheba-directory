@@ -1,5 +1,7 @@
+import { ReviewStatus } from "../../generated/prisma/enums";
 import type {
   ListingGetPayload,
+  ListingReviewSelect,
   ListingSelect,
   MediaSelect,
 } from "../../generated/prisma/models";
@@ -16,6 +18,14 @@ export const MEDIA_SELECT = {
   public_id: true,
   alt: true,
 } satisfies MediaSelect;
+
+export const PUBLIC_REVIEW_SELECT = {
+  id: true,
+  rating: true,
+  text: true,
+  name: true,
+  createdAt: true,
+} satisfies ListingReviewSelect;
 
 export const PUBLIC_LISTING_DETAIL_SELECT = {
   id: true,
@@ -47,6 +57,11 @@ export const PUBLIC_LISTING_DETAIL_SELECT = {
   updatedAt: true,
   publishedAt: true,
   canonicalUrl: true,
+  reviews: {
+    where: { status: ReviewStatus.ACTIVE },
+    orderBy: { createdAt: "desc" as const },
+    select: PUBLIC_REVIEW_SELECT,
+  },
   category: { select: { id: true, name: true, slug: true } },
   location: {
     select: {
@@ -119,6 +134,14 @@ export type PublicMedia = {
   alt: string | null;
 };
 
+export type PublicListingReview = {
+  id: string;
+  rating: number;
+  text: string;
+  name: string | null;
+  createdAt: string;
+};
+
 export type PublicListingLocation = {
   id: string;
   nameEn: string;
@@ -168,6 +191,7 @@ export type PublicListingDetail = {
   logo: PublicMedia | null;
   thumbnail: PublicMedia | null;
   gallery: PublicMedia[];
+  reviews: PublicListingReview[];
 };
 
 export type RelatedListingItem = {
@@ -231,6 +255,23 @@ export function toPublicListingDetail(
     logo: row.logo ?? null,
     thumbnail: row.thumbnail ?? null,
     gallery: row.gallery ?? [],
+    reviews: (row.reviews ?? []).map(toPublicListingReview),
+  };
+}
+
+export function toPublicListingReview(row: {
+  id: string;
+  rating: number;
+  text: string;
+  name: string | null;
+  createdAt: Date;
+}): PublicListingReview {
+  return {
+    id: row.id,
+    rating: row.rating,
+    text: row.text,
+    name: row.name,
+    createdAt: new Date(row.createdAt).toISOString(),
   };
 }
 

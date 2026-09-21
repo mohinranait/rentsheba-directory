@@ -13,7 +13,11 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -56,6 +60,10 @@ const mainMenu: MenuItem[] = [
       {
         title: "All Listings",
         href: "/admin/listings",
+      },
+      {
+        title: "Listing Reviews",
+        href: "/admin/listing-reviews",
       },
       {
         title: "Pending Review",
@@ -102,7 +110,6 @@ const mainMenu: MenuItem[] = [
         title: "Divisions",
         href: "/admin/divisions",
       },
-     
     ],
   },
   {
@@ -166,17 +173,10 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar
-      collapsible="icon"
-      variant="inset"
-      className="border-r p-0"
-    >
+    <Sidebar collapsible="icon" variant="inset" className="border-r p-0">
       <SidebarHeader className="h-16 flex gap-0 items-start justify-center border-b">
         <div className="flex  items-center gap-3 px-2">
-          <Link
-            href="/admin"
-            className="flex min-w-0 items-center gap-3"
-          >
+          <Link href="/admin" className="flex min-w-0 items-center gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
               <ShieldCheck className="size-5" />
             </div>
@@ -210,7 +210,10 @@ export function AdminSidebar() {
                         tooltip={item.title}
                         isActive={isActive(item.href)}
                       >
-                        <Link href={item.href ?? "#"} className="text-base w-full  flex gap-2 items-center">
+                        <Link
+                          href={item.href ?? "#"}
+                          className="text-base w-full  flex gap-2 items-center"
+                        >
                           <item.icon className="" />
                           <span>{item.title}</span>
 
@@ -232,12 +235,11 @@ export function AdminSidebar() {
                 return (
                   <Collapsible
                     key={item.title}
-
                     defaultOpen={hasActiveChild}
                     className="group/collapsible"
                   >
-                    <SidebarMenuItem >
-                      <CollapsibleTrigger className=" w-full" >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger className=" w-full">
                         <SidebarMenuButton
                           tooltip={item.title}
                           isActive={hasActiveChild}
@@ -257,7 +259,10 @@ export function AdminSidebar() {
                                 className="h-10"
                                 isActive={isActive(child.href)}
                               >
-                                <Link href={child.href} className=" text-base w-full flex gap-2 items-center">
+                                <Link
+                                  href={child.href}
+                                  className=" text-base w-full flex gap-2 items-center"
+                                >
                                   <span>{child.title}</span>
 
                                   {child.badge && (
@@ -292,12 +297,11 @@ export function AdminSidebar() {
                 return (
                   <Collapsible
                     key={item.title}
-
                     defaultOpen={hasActiveChild}
                     className="group/collapsible"
                   >
                     <SidebarMenuItem>
-                      <CollapsibleTrigger >
+                      <CollapsibleTrigger>
                         <SidebarMenuButton
                           tooltip={item.title}
                           isActive={hasActiveChild}
@@ -313,7 +317,6 @@ export function AdminSidebar() {
                           {item.children?.map((child) => (
                             <SidebarMenuSubItem key={child.href}>
                               <SidebarMenuSubButton
-
                                 isActive={isActive(child.href)}
                               >
                                 <Link href={child.href}>
@@ -336,10 +339,7 @@ export function AdminSidebar() {
       <SidebarFooter className="border-t">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-
-              tooltip="Admin Profile"
-            >
+            <SidebarMenuButton tooltip="Admin Profile">
               <Link href="/admin/profile">
                 <Avatar className="size-7">
                   <AvatarFallback className="bg-primary text-xs text-primary-foreground">

@@ -1,0 +1,16 @@
+model ListingReview {
+   id          String        @id @default(uuid())
+   rating      Int @default(5)
+   text         String
+   name         String? @default("annonimus")
+
+   status ReviewStatus @default(PENDING)
+
+   listingId String
+   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+
+ createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  @@map("listingreviews")
+}

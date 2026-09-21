@@ -49,3 +49,9 @@ enum UserStatus {
   BLOCKED
   DELETED
 }
+
+enum ReviewStatus {
+   PENDING
+   ACTIVE
+   DELETED
+}

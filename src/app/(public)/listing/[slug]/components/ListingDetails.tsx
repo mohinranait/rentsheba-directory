@@ -1,5 +1,3 @@
-
-
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import ListingFaqs from "./ListingFaqs";
 import OpeningHours from "./OpeningHours";
+import ReviewsSection from "./ReviewsSection";
 
 type ListingDetailsProps = {
   listing: PublicListingDetail;
@@ -58,7 +57,6 @@ const getTone = (title: string) => {
   return FALLBACK_TONES[hash % FALLBACK_TONES.length];
 };
 
-
 const formatDate = (value: string | null | undefined) => {
   if (!value) return "";
   const date = new Date(value);
@@ -73,9 +71,9 @@ const formatDate = (value: string | null | undefined) => {
 const websiteLabel = (website?: string | null) =>
   website
     ? website
-      .replace(/^https?:\/\//i, "")
-      .replace(/^www\./i, "")
-      .replace(/\/+$/, "")
+        .replace(/^https?:\/\//i, "")
+        .replace(/^www\./i, "")
+        .replace(/\/+$/, "")
     : "";
 
 export default function ListingDetails({
@@ -83,9 +81,6 @@ export default function ListingDetails({
   related,
 }: ListingDetailsProps) {
   // const [saved, setSaved] = useState(false);
-
-
-
 
   const title = listing.title;
   const category = listing.category;
@@ -96,7 +91,6 @@ export default function ListingDetails({
     listing.reviewCount > 0
       ? `${listing.averageRating.toFixed(1)} (${listing.reviewCount} review${listing.reviewCount === 1 ? "" : "s"})`
       : "No reviews yet";
-
 
   const mapsQuery =
     listing.latitude !== null && listing.longitude !== null
@@ -159,8 +153,7 @@ export default function ListingDetails({
                       ) : (
                         <>
                           {" "}
-                          <BadgeCheck className="size-4" />{" "}
-                          {badge}{" "}
+                          <BadgeCheck className="size-4" /> {badge}{" "}
                         </>
                       )}{" "}
                     </span>
@@ -242,7 +235,6 @@ export default function ListingDetails({
               </div>
               <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#edf1ee] px-6 py-5">
                 <div className="flex flex-wrap gap-4 text-sm text-[#6d857b]">
-
                   <span className="flex items-center gap-2">
                     <ShieldCheck className="size-4 text-[#4b8b71]" />{" "}
                     {listing.isClaimed ? "Claimed profile" : "Verified listing"}
@@ -313,49 +305,13 @@ export default function ListingDetails({
             </section>
 
             <section className="mt-8 rounded-3xl border border-[#e0e9e3] bg-white p-6 sm:p-8">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
-                    Customer reviews
-                  </p>
-                  <h2 className="mt-3 text-2xl font-bold tracking-[-.04em] text-[#173f34]">
-                    What people are saying
-                  </h2>
-                </div>
-                <div className="text-right">
-                  <p className="flex items-center justify-end gap-1 text-2xl font-bold text-[#254d40]">
-                    <Star className="size-5 fill-[#e5b34f] text-[#e5b34f]" />{" "}
-                    {listing.averageRating.toFixed(1)}
-                  </p>
-                  <p className="text-xs text-[#80958c]">
-                    {listing.reviewCount > 0
-                      ? `${listing.reviewCount} verified review${listing.reviewCount === 1 ? "" : "s"}`
-                      : "No reviews yet"}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-7 flex flex-col gap-5">
-                {listing.reviewCount > 0 ? (
-                  <div className="border-t border-[#edf1ee] pt-5 text-sm leading-7 text-[#657d74]">
-                    This business has earned{" "}
-                    <strong className="font-bold text-[#31594c]">
-                      {listing.averageRating.toFixed(1)} out of 5
-                    </strong>{" "}
-                    from {listing.reviewCount} review
-                    {listing.reviewCount === 1 ? "" : "s"} on directory.
-                  </div>
-                ) : (
-                  <div className="border-t border-[#edf1ee] pt-5 text-sm leading-7 text-[#657d74]">
-                    No customer reviews yet. Reviews from verified customers will
-                    appear here.
-                  </div>
-                )}
-              </div>
-              {listing.reviewCount > 0 && (
-                <Button className="mt-6 rounded-xl border border-[#cbded2] px-4 py-2.5 text-sm font-bold text-[#3e6d5b]">
-                  Read all reviews
-                </Button>
-              )}
+              <ReviewsSection
+              listing={listing}
+                slug={listing.slug}
+                initialReviews={listing.reviews}
+                initialAverageRating={listing.averageRating}
+                initialReviewCount={listing.reviewCount}
+              />
             </section>
 
             {listing.faqs?.length ? (
@@ -427,35 +383,35 @@ export default function ListingDetails({
               {(listing.addressLine1 ||
                 location ||
                 listing.latitude !== null) && (
-                  <div className="mt-6 border-t border-[#edf1ee] pt-5">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="mt-0.5 size-4 shrink-0 text-[#4b8b71]" />
-                      <div>
-                        <p className="text-sm font-semibold text-[#42665a]">
-                          {[listing.addressLine1, location]
-                            .filter(Boolean)
-                            .join(", ")}
+                <div className="mt-6 border-t border-[#edf1ee] pt-5">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="mt-0.5 size-4 shrink-0 text-[#4b8b71]" />
+                    <div>
+                      <p className="text-sm font-semibold text-[#42665a]">
+                        {[listing.addressLine1, location]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                      {directionsHref ? (
+                        <Link
+                          href={directionsHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center text-xs font-bold text-[#4b8b71]"
+                        >
+                          Get directions{" "}
+                          <ArrowRight className="ml-1 inline size-3.5" />
+                        </Link>
+                      ) : (
+                        <p className="mt-2 text-xs font-bold text-[#4b8b71]">
+                          Get directions{" "}
+                          <ArrowRight className="ml-1 inline size-3.5" />
                         </p>
-                        {directionsHref ? (
-                          <Link
-                            href={directionsHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-flex items-center text-xs font-bold text-[#4b8b71]"
-                          >
-                            Get directions{" "}
-                            <ArrowRight className="ml-1 inline size-3.5" />
-                          </Link>
-                        ) : (
-                          <p className="mt-2 text-xs font-bold text-[#4b8b71]">
-                            Get directions{" "}
-                            <ArrowRight className="ml-1 inline size-3.5" />
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
               {listing.website && (
                 <div className="mt-5 flex items-start gap-3">
                   <Globe2 className="mt-0.5 size-4 shrink-0 text-[#4b8b71]" />
@@ -476,8 +432,8 @@ export default function ListingDetails({
                 <ShieldCheck className="size-4" /> Listing quality checked
               </div>
               <p className="mt-2 text-xs leading-6 text-[#69847a]">
-                This profile has been reviewed by the directory team. Information
-                is kept up to date by the business owner.
+                This profile has been reviewed by the directory team.
+                Information is kept up to date by the business owner.
               </p>
               <p className="mt-3 text-[11px] text-[#8aa197]">
                 Last updated: {formatDate(listing.updatedAt)}
@@ -489,7 +445,6 @@ export default function ListingDetails({
                 Opening hours
               </p>
               <OpeningHours openingHours={listing?.openingHours} />
-
             </div>
           </aside>
         </div>
@@ -511,7 +466,9 @@ export default function ListingDetails({
             </Link>
           </div>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {related.map((item) => <ListingCard key={item.id} item={item} /> )}
+            {related.map((item) => (
+              <ListingCard key={item.id} item={item} />
+            ))}
           </div>
         </div>
       </section>

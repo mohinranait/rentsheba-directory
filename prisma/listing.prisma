@@ -92,7 +92,7 @@ model Listing {
 
   favorites   Favorite[]
 
-  // reviews     ListingReview[]
+  reviews     ListingReview[]
 
   @@index([verificationStatus])
   @@index([ownerId])
