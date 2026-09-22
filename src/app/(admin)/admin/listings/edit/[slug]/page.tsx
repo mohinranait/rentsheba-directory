@@ -4,16 +4,14 @@ import {
   ArrowLeft,
   CheckCircle2,
   ExternalLink,
-  Flag,
   MapPin,
   Pencil,
   Phone,
   Star,
   Trash2,
-  User,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import type {
@@ -93,7 +91,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 
 export default function ReviewListingPage() {
   const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
 
   const [detail, setDetail] = useState<AdminListingDetail | null>(null);
   const [loading, setLoading] = useState(true);

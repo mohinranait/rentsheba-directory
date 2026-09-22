@@ -7,8 +7,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import type { LocationType } from "../../../../../../generated/prisma/enums";
 
-type LocationType = "DIVISION" | "DISTRICT" | "UPAZILA";
 interface Location {
     id: string;
     nameEn: string;
@@ -32,98 +32,103 @@ const typeLabel: Record<LocationType, string> = {
 const LocationTable = ({ locations }: LocationTableProps) => {
     return (
         <div className="overflow-hidden rounded-xl border bg-background">
-            {" "}
+
             <Table>
-                {" "}
+
                 <TableHeader>
-                    {" "}
+
                     <TableRow>
-                        {" "}
-                        <TableHead>Location</TableHead>{" "}
-                        <TableHead>Type</TableHead>{" "}
-                        <TableHead>Parent</TableHead>{" "}
-                        <TableHead>Slug</TableHead>{" "}
-                        <TableHead>Postal Code</TableHead>{" "}
-                        <TableHead>Coordinates</TableHead>{" "}
-                    </TableRow>{" "}
-                </TableHeader>{" "}
+
+                        <TableHead>Location</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Parent</TableHead>
+                        <TableHead>Slug</TableHead>
+                        <TableHead>Postal Code</TableHead>
+                        <TableHead>Coordinates</TableHead>
+                    </TableRow>
+                </TableHeader>
                 <TableBody>
-                    {" "}
+
                     {locations?.length > 0 ? (
                         locations?.map((location) => (
                             <TableRow key={location.id}>
-                                {" "}
+
                                 <TableCell>
-                                    {" "}
+
                                     <div>
-                                        {" "}
+
                                         <p className="font-medium">
                                             {location.nameEn}
-                                        </p>{" "}
+                                        </p>
                                         <p className="text-sm text-muted-foreground">
-                                            {" "}
-                                            {location.nameLocal}{" "}
-                                        </p>{" "}
-                                    </div>{" "}
-                                </TableCell>{" "}
+
+                                            {location.nameLocal}
+                                        </p>
+                                    </div>
+                                </TableCell>
                                 <TableCell>
-                                    {" "}
+
                                     <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium">
-                                        {" "}
-                                        {typeLabel[location.type]}{" "}
-                                    </span>{" "}
-                                </TableCell>{" "}
+
+                                        {typeLabel[location.type]}
+                                    </span>
+                                </TableCell>
                                 <TableCell>
-                                    {" "}
+
                                     {location.parent ? (
                                         <div>
-                                            {" "}
+
                                             <p className="text-sm font-medium">
-                                                {" "}
-                                                {location.parent.nameEn}{" "}
-                                            </p>{" "}
+
+                                                {location.parent.nameEn}
+                                            </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {" "}
-                                                {location.parent.nameLocal}{" "}
-                                            </p>{" "}
+
+                                                {location.parent.nameLocal}
+                                            </p>
                                         </div>
                                     ) : (
                                         <span className="text-muted-foreground">
                                             —
                                         </span>
-                                    )}{" "}
-                                </TableCell>{" "}
+                                    )}
+                                </TableCell>
                                 <TableCell className="max-w-48 truncate text-muted-foreground">
-                                    {" "}
-                                    {location.slug}{" "}
-                                </TableCell>{" "}
+
+                                    {location.slug}
+                                </TableCell>
                                 <TableCell>
-                                    {" "}
-                                    {location.postalCode ?? "—"}{" "}
-                                </TableCell>{" "}
+
+                                    {location.postalCode ?? "—"}
+                                </TableCell>
                                 <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                                    {" "}
+
                                     {location.lat !== null &&
                                         location.lon !== null
                                         ? `${location.lat}, ${location.lon}`
-                                        : "—"}{" "}
-                                </TableCell>{" "}
+                                        : "—"}
+                                </TableCell>
+                                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+
+
+                                
+                                </TableCell>
                             </TableRow>
                         ))
                     ) : (
                         <TableRow>
-                            {" "}
+
                             <TableCell
                                 colSpan={6}
                                 className="h-24 text-center text-muted-foreground"
                             >
-                                {" "}
-                                No locations found.{" "}
-                            </TableCell>{" "}
+
+                                No locations found.
+                            </TableCell>
                         </TableRow>
-                    )}{" "}
-                </TableBody>{" "}
-            </Table>{" "}
+                    )}
+                </TableBody>
+            </Table>
         </div>
     );
 };

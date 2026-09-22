@@ -1,14 +1,7 @@
 "use client";
 import {
-  Building2,
   ChevronDown,
-  CreditCard,
-  FolderTree,
-  LayoutDashboard,
-  MapPinned,
-  Settings,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -34,129 +27,11 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { mainMenu, settingsMenu } from "@/constants/nav-manus";
 
-type MenuItem = {
-  title: string;
-  href?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  children?: {
-    title: string;
-    href: string;
-    badge?: string;
-  }[];
-};
 
-const mainMenu: MenuItem[] = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Listings",
-    icon: Building2,
-    children: [
-      {
-        title: "All Listings",
-        href: "/admin/listings",
-      },
-      {
-        title: "Listing Reviews",
-        href: "/admin/listing-reviews",
-      },
-      {
-        title: "Pending Review",
-        href: "/admin/listings/pending",
-        badge: "12",
-      },
-      {
-        title: "Approved",
-        href: "/admin/listings/approved",
-      },
-      {
-        title: "Rejected",
-        href: "/admin/listings/rejected",
-      },
-      {
-        title: "Featured",
-        href: "/admin/listings/featured",
-      },
-    ],
-  },
-  {
-    title: "Categories",
-    icon: FolderTree,
-    children: [
-      {
-        title: "All Categories",
-        href: "/admin/categories",
-      },
-      {
-        title: "Parent Categories",
-        href: "/admin/categories/parents",
-      },
-      {
-        title: "Sub Categories",
-        href: "/admin/categories/subcategories",
-      },
-    ],
-  },
-  {
-    title: "Locations",
-    icon: MapPinned,
-    children: [
-      {
-        title: "Divisions",
-        href: "/admin/divisions",
-      },
-    ],
-  },
-  {
-    title: "Users",
-    icon: Users,
-    children: [
-      {
-        title: "All Users",
-        href: "/admin/users",
-      },
-      {
-        title: "Sellers",
-        href: "/admin/users/sellers",
-      },
-      {
-        title: "Admins",
-        href: "/admin/users/admins",
-      },
-    ],
-  },
-  {
-    title: "Subscriptions",
-    href: "/admin/subscriptions",
-    icon: CreditCard,
-  },
-];
 
-const settingsMenu: MenuItem[] = [
-  {
-    title: "Settings",
-    icon: Settings,
-    children: [
-      {
-        title: "General Settings",
-        href: "/admin/settings",
-      },
-      {
-        title: "SEO",
-        href: "/admin/settings/seo",
-      },
-      {
-        title: "Email Templates",
-        href: "/admin/settings/email",
-      },
-    ],
-  },
-];
+
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -200,7 +75,7 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
 
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-3">
+            <SidebarMenu className="space-y-3 gap-0">
               {mainMenu.map((item) => {
                 if (!item.children) {
                   return (

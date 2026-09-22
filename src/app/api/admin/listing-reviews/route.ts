@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { recomputeListingReviewStats } from "@/utils/listing-review";
 import { ReviewStatus } from "../../../../../generated/prisma/enums";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -130,4 +131,130 @@ function buildStats(counts: GroupedCount[]) {
     approved: byStatus.get(ReviewStatus.ACTIVE) ?? 0,
     deleted: byStatus.get(ReviewStatus.DELETED) ?? 0,
   };
+}
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/listing-reviews
+// ---------------------------------------------------------------------------
+// Body: { listingId, rating, text, name?, status? }
+//
+// Lets an admin add a review directly for any listing (PUBLIC by default so it
+// shows up immediately). If the selected status is ACTIVE the listing cache is
+// recomputed so the public page stays in sync.
+// ---------------------------------------------------------------------------
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = (await request.json().catch(() => null)) as {
+      listingId?: unknown;
+      rating?: unknown;
+      text?: unknown;
+      name?: unknown;
+      status?: unknown;
+    } | null;
+
+    const listingId =
+      typeof body?.listingId === "string" ? body.listingId.trim() : "";
+    const rating = Number(body?.rating ?? 0);
+    const text = typeof body?.text === "string" ? body.text.trim() : "";
+    const name = typeof body?.name === "string" ? body.name.trim() : "";
+    const statusRaw = body?.status;
+
+    const status =
+      typeof statusRaw === "string" && STATUSES.includes(statusRaw)
+        ? (statusRaw as ReviewStatus)
+        : ReviewStatus.ACTIVE;
+
+    if (!listingId) {
+      return NextResponse.json(
+        { success: false, message: "A listing is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { success: false, message: "Rating must be between 1 and 5" },
+        { status: 400 },
+      );
+    }
+
+    if (!text) {
+      return NextResponse.json(
+        { success: false, message: "Please write a review" },
+        { status: 400 },
+      );
+    }
+
+    if (text.length > 1000) {
+      return NextResponse.json(
+        { success: false, message: "Review must be under 1000 characters" },
+        { status: 400 },
+      );
+    }
+
+    if (name.length > 80) {
+      return NextResponse.json(
+        { success: false, message: "Name must be under 80 characters" },
+        { status: 400 },
+      );
+    }
+
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: { id: true },
+    });
+
+    if (!listing) {
+      return NextResponse.json(
+        { success: false, message: "Listing not found" },
+        { status: 404 },
+      );
+    }
+
+    const review = await prisma.listingReview.create({
+      data: {
+        listingId,
+        rating,
+        text,
+        name: name || null,
+        status,
+      },
+      select: {
+        id: true,
+        rating: true,
+        text: true,
+        name: true,
+        status: true,
+        createdAt: true,
+        listing: { select: { id: true, title: true, slug: true } },
+      },
+    });
+
+    if (status === ReviewStatus.ACTIVE) {
+      await recomputeListingReviewStats(listingId);
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message:
+          status === ReviewStatus.ACTIVE
+            ? "Review added and published"
+            : "Review added",
+        data: review,
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("Create admin listing review error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Something went wrong",
+      },
+      { status: 500 },
+    );
+  }
 }

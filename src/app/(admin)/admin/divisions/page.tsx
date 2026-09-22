@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const Divistions = async () => {
   const locations = await getDivisions();
 
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
