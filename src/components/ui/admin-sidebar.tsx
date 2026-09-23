@@ -5,7 +5,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,12 +29,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { mainMenu, settingsMenu } from "@/constants/nav-manus";
+import type { MeUser } from "../common/UserMenu";
+import { formatRole, getInitials } from "./admin-header";
+import { Button } from "./button";
 
 
 
 
 
 export function AdminSidebar() {
+   const [user, setUser] = useState<MeUser | null>(null);
   const pathname = usePathname();
   const { state } = useSidebar();
 
@@ -46,6 +51,33 @@ export function AdminSidebar() {
 
     return pathname.startsWith(href);
   };
+
+  useEffect(() => {
+      let cancelled = false;
+  
+      fetch("/api/me", { headers: { Accept: "application/json" } })
+        .then((response) => {
+          if (response.status === 401) return null;
+          return response.json().catch(() => null);
+        })
+        .then((json) => {
+          if (cancelled) return;
+  
+  
+          setUser(json.user);
+        })
+        .catch(() => {
+          if (!cancelled) setUser(null);
+        });
+  
+      return () => {
+        cancelled = true;
+      };
+    }, []);
+
+
+  const displayName = user?.name || user?.email || "Admin";
+  const initials = user ? getInitials(user.name || user.email) : "A";
 
   return (
     <Sidebar collapsible="icon" variant="inset" className="border-r p-0">
@@ -215,22 +247,21 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Admin Profile">
-              <Link href="/admin/profile">
-                <Avatar className="size-7">
-                  <AvatarFallback className="bg-primary text-xs text-primary-foreground">
-                    ME
-                  </AvatarFallback>
-                </Avatar>
+              <Button variant="ghost" className="ml-1 gap-2 px-2">
+              <Avatar className="size-8">
+                <AvatarImage src={user?.image ?? undefined} alt={displayName} />
+                <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
 
-                <div className="flex min-w-0 flex-1 flex-col text-left">
-                  <span className="truncate text-xs font-medium">
-                    Md. Ebrahim
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    Super Admin
-                  </span>
-                </div>
-              </Link>
+              <div className="hidden flex-col items-start text-left md:flex">
+                <span className="text-xs font-semibold">{displayName}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {user ? formatRole(user.role) : "Loading..."}
+                </span>
+              </div>
+            </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
