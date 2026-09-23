@@ -77,7 +77,7 @@ export const mainMenu: MenuItem[] = [
   },
   {
     title: "Subscriptions",
-    href: "/admin/subscriptions",
+    href: "/admin/subscription-plan",
     icon: CreditCard,
   },
 ];

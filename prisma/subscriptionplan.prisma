@@ -1,6 +1,5 @@
 
 
-
 model SubscriptionPlan {
   id              String   @id @default(uuid())
 
@@ -15,6 +14,12 @@ model SubscriptionPlan {
   maxListings     Int
 
   durationInDays  Int
+
+  description     String?
+
+  features        String[] @default([])
+
+  badge           String?
 
   isActive        Boolean  @default(true)
 
