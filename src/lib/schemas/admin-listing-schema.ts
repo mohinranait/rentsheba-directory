@@ -95,6 +95,8 @@ export const adminLocationContactSchema = z.object({
     .optional()
     .or(z.literal("")),
   socialLinks: adminSocialLinksSchema,
+  latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+  longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
 });
 
 // ----------------------------------------------------------------------------
@@ -194,6 +196,8 @@ export const ADMIN_STEP_FIELDS: Record<
     "website",
     "whatsapp",
     "socialLinks",
+    "latitude",
+    "longitude",
   ],
   2: ["establishedYear", "priceRange", "areaServed", "openingHours"],
   3: ["features", "faqs"],
@@ -217,6 +221,8 @@ export const defaultAdminListingValues: AdminListingFormValues = {
   description: "",
   locationId: "",
   addressLine1: "",
+  latitude: undefined,
+  longitude: undefined,
   phone: "",
   email: "",
   website: "",

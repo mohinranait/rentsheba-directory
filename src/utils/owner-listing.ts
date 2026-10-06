@@ -37,6 +37,8 @@ const detailSelect = {
   website: true,
   whatsapp: true,
   addressLine1: true,
+  latitude: true,
+  longitude: true,
   establishedYear: true,
   priceRange: true,
   areaServed: true,
@@ -93,11 +95,15 @@ function toAdminDetail(row: OwnerDetailRow): AdminListingDetail {
     updatedAt,
     publishedAt,
     verifiedAt,
+    latitude,
+    longitude,
     ...rest
   } = row;
 
   return {
     ...rest,
+    latitude: latitude !== null && latitude !== undefined ? Number(latitude) : null,
+    longitude: longitude !== null && longitude !== undefined ? Number(longitude) : null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt?.toISOString() ?? null,
@@ -300,6 +306,14 @@ async function applyListingUpdate(
       website: data.website ?? null,
       whatsapp: data.whatsapp ?? null,
       addressLine1: data.addressLine1,
+      latitude:
+        data.latitude !== undefined && data.latitude !== null
+          ? data.latitude
+          : null,
+      longitude:
+        data.longitude !== undefined && data.longitude !== null
+          ? data.longitude
+          : null,
       establishedYear: data.establishedYear ?? null,
       priceRange: data.priceRange || null,
       areaServed: data.areaServed || null,

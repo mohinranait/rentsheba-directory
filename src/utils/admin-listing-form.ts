@@ -62,6 +62,12 @@ export function parseAdminListingFormData(
     website: asString(formData, "website"),
     whatsapp: asString(formData, "whatsapp"),
     socialLinks: asJSON(formData, "socialLinks") ?? defaultAdminSocialLinks,
+    latitude: formData.get("latitude")
+      ? Number(formData.get("latitude"))
+      : undefined,
+    longitude: formData.get("longitude")
+      ? Number(formData.get("longitude"))
+      : undefined,
 
     // Step 3 — Business details
     establishedYear: establishedYear ? Number(establishedYear) : undefined,

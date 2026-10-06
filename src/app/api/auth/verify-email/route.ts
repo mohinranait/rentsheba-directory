@@ -112,6 +112,14 @@ export async function POST(request: Request) {
             website: listing.website,
             whatsapp: listing.whatsapp,
             addressLine1: listing.addressLine1,
+            latitude:
+              listing.latitude !== undefined && listing.latitude !== null
+                ? Number(listing.latitude)
+                : undefined,
+            longitude:
+              listing.longitude !== undefined && listing.longitude !== null
+                ? Number(listing.longitude)
+                : undefined,
             establishedYear: listing.establishedYear,
             priceRange: listing.priceRange,
             areaServed: listing.areaServed,

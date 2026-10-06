@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Globe, Mail, MapPin, Pencil, Phone } from "lucide-react";
+import { CheckCircle2, ExternalLink, Globe, Mail, MapPin, Pencil, Phone } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -225,6 +225,28 @@ export function AdminStepReview({
               {values.website}
             </p>
           )}
+
+          {typeof values.latitude === "number" &&
+            typeof values.longitude === "number" && (
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                <Badge
+                  variant="outline"
+                  className="gap-1 font-mono text-[11px] border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400"
+                >
+                  <MapPin className="size-3 text-emerald-600" />
+                  {values.latitude.toFixed(5)}, {values.longitude.toFixed(5)}
+                </Badge>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${values.latitude},${values.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                >
+                  View on Google Maps
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+            )}
         </div>
       </Section>
 

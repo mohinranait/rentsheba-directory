@@ -270,6 +270,14 @@ export async function POST(request: Request) {
         website: data.website,
         whatsapp: data.whatsapp,
         addressLine1: data.addressLine1,
+        latitude:
+          data.latitude !== undefined && data.latitude !== null
+            ? data.latitude
+            : undefined,
+        longitude:
+          data.longitude !== undefined && data.longitude !== null
+            ? data.longitude
+            : undefined,
         establishedYear: data.establishedYear,
         priceRange: data.priceRange,
         areaServed: data.areaServed,

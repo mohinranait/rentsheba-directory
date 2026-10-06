@@ -19,6 +19,7 @@ import Link from "next/link";
 import ListingCard from "@/components/common/ListingCard";
 import GridBackdrop from "@/components/GridBackdrop";
 import { Button } from "@/components/ui/button";
+import { ListingMapView } from "@/components/ui/listing-map-view";
 import {
   locationDisplay,
   type PublicListingDetail,
@@ -92,13 +93,21 @@ export default function ListingDetails({
       ? `${listing.averageRating.toFixed(1)} (${listing.reviewCount} review${listing.reviewCount === 1 ? "" : "s"})`
       : "No reviews yet";
 
-  const mapsQuery =
-    listing.latitude !== null && listing.longitude !== null
-      ? `${listing.latitude},${listing.longitude}`
-      : [listing.addressLine1, locationShort].filter(Boolean).join(", ");
-  const directionsHref = mapsQuery
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
-    : null;
+  const hasCoords =
+    listing.latitude !== null &&
+    listing.longitude !== null &&
+    !isNaN(Number(listing.latitude)) &&
+    !isNaN(Number(listing.longitude));
+
+  const mapsQuery = hasCoords
+    ? `${listing.latitude},${listing.longitude}`
+    : [listing.addressLine1, locationShort].filter(Boolean).join(", ");
+
+  const directionsHref = hasCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`
+    : mapsQuery
+      ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsQuery)}`
+      : null;
 
   const whatsapp = listing.whatsapp
     ? `https://wa.me/${listing.whatsapp.replace(/[^\d]/g, "")}`
@@ -303,6 +312,25 @@ export default function ListingDetails({
                 </p>
               )}
             </section>
+
+            {(listing.addressLine1 || location || hasCoords) && (
+              <section className="mt-8 rounded-3xl border border-[#e0e9e3] bg-white p-6 sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[#6d9585]">
+                  Location &amp; Directions
+                </p>
+                <h2 className="mt-3 text-2xl font-bold tracking-[-.04em] text-[#173f34]">
+                  Where to find us
+                </h2>
+                <div className="mt-6">
+                  <ListingMapView
+                    latitude={listing.latitude}
+                    longitude={listing.longitude}
+                    title={title}
+                    address={[listing.addressLine1, location].filter(Boolean).join(", ")}
+                  />
+                </div>
+              </section>
+            )}
 
             <section className="mt-8 rounded-3xl border border-[#e0e9e3] bg-white p-6 sm:p-8">
               <ReviewsSection

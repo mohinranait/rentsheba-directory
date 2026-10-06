@@ -86,6 +86,8 @@ export const locationContactSchema = z.object({
     .optional()
     .or(z.literal("")),
   socialLinks: socialLinksSchema,
+  latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+  longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
 });
 
 // ----------------------------------------------------------------------------
@@ -204,6 +206,8 @@ export const STEP_FIELDS: Record<number, (keyof ListingFormValues)[]> = {
     "website",
     "whatsapp",
     "socialLinks",
+    "latitude",
+    "longitude",
   ],
   2: ["establishedYear", "priceRange", "areaServed", "openingHours"],
   3: ["features", "faqs"],
@@ -227,6 +231,8 @@ export const defaultListingValues: Partial<ListingFormValues> = {
   description: "",
   locationId: "",
   addressLine1: "",
+  latitude: null,
+  longitude: null,
   phone: "",
   email: "",
   website: "",

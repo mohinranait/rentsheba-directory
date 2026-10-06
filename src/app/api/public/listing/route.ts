@@ -262,6 +262,12 @@ function parseFormData(formData: FormData): ListingFormValues {
     // Step 2 — Location & contact
     locationId: asString("locationId"),
     addressLine1: asString("addressLine1"),
+    latitude: formData.get("latitude")
+      ? Number(formData.get("latitude"))
+      : undefined,
+    longitude: formData.get("longitude")
+      ? Number(formData.get("longitude"))
+      : undefined,
     phone: asString("phone"),
     email: asString("email"),
     website: asString("website"),
@@ -422,6 +428,8 @@ export async function POST(request: Request) {
         description: data.description,
         locationId: data.locationId,
         addressLine1: data.addressLine1,
+        latitude: data.latitude,
+        longitude: data.longitude,
         phone: data.phone,
         email: data.email,
         website: data.website,

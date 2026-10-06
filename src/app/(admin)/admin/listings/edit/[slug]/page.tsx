@@ -736,15 +736,42 @@ export default function ReviewListingPage() {
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <MapPin className="size-4" />
-                Address
+                Address & Map Pin
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="text-sm text-muted-foreground">
-              {detail.addressLine1 ?? "Not provided"}
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">
+                {detail.addressLine1 ?? "Not provided"}
+              </p>
               {detail.location && (
-                <p className="mt-1">
+                <p>
                   {detail.location.nameLocal} ({detail.location.nameEn})
+                </p>
+              )}
+              {detail.latitude !== null && detail.longitude !== null ? (
+                <div className="pt-2 flex flex-col gap-1.5 border-t">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className="font-mono text-xs border-emerald-300 text-emerald-700 dark:text-emerald-400"
+                    >
+                      📍 {detail.latitude.toFixed(5)}, {detail.longitude.toFixed(5)}
+                    </Badge>
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${detail.latitude},${detail.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
+                  >
+                    Open in Google Maps / Directions
+                    <ExternalLink className="size-3" />
+                  </a>
+                </div>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400 pt-1">
+                  No map coordinates pinned yet.
                 </p>
               )}
             </CardContent>

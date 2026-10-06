@@ -62,6 +62,8 @@ export function buildEditValues(
     description: detail.description,
     locationId: detail.location?.id ?? "",
     addressLine1: detail.addressLine1 ?? "",
+    latitude: detail.latitude ?? undefined,
+    longitude: detail.longitude ?? undefined,
     phone: detail.phone ?? "",
     email: detail.email ?? "",
     website: detail.website ?? "",

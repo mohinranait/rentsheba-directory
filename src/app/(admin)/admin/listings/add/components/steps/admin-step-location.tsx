@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import type { AdminListingFormValues } from "@/lib/schemas/admin-listing-schema";
+import { MapPicker } from "@/components/ui/map-picker";
 import { StepHeader } from "./admin-step-header";
 
 export function AdminStepLocation() {
@@ -189,6 +190,23 @@ export function AdminStepLocation() {
             placeholder="House/road number, area name"
           />
         )}
+      />
+
+      {/* Interactive Location Pin on Map */}
+      <MapPicker
+        latitude={form.watch("latitude")}
+        longitude={form.watch("longitude")}
+        onChange={({ lat, lng }) => {
+          form.setValue("latitude", lat, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+          form.setValue("longitude", lng, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }}
+        addressHint={form.watch("addressLine1")}
       />
 
       <Separator />

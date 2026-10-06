@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Mail, MapPin, Pencil, Phone, Star } from "lucide-react";
+import { ExternalLink, Globe, Mail, MapPin, Pencil, Phone, Star } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,6 +104,27 @@ export function StepPreview({ onEdit }: { onEdit: (index: number) => void }) {
               <Globe className="h-4 w-4 shrink-0 text-[#8A8371]" /> {values.website}
             </p>
           )}
+          {typeof values.latitude === "number" &&
+            typeof values.longitude === "number" && (
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                <Badge
+                  variant="outline"
+                  className="gap-1 font-mono text-[11px] border-[#c2ded0] text-[#1F4D3D] bg-[#edf7f1]"
+                >
+                  <MapPin className="size-3 text-[#1F4D3D]" />
+                  {values.latitude.toFixed(5)}, {values.longitude.toFixed(5)}
+                </Badge>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${values.latitude},${values.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-[#1F4D3D] underline"
+                >
+                  ম্যাপে পিন করা অবস্থান দেখুন
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+            )}
         </div>
       </Section>
 

@@ -5,6 +5,7 @@ import { useFormContext } from "react-hook-form";
 import type { LocationNode } from "@/app/api/locations/tree/route";
 import { ControlledField } from "@/components/ui/controlled-field";
 import { Input } from "@/components/ui/input";
+import { MapPicker } from "@/components/ui/map-picker";
 import {
   Select,
   SelectContent,
@@ -206,6 +207,23 @@ export function StepLocationContact() {
             placeholder="বাড়ি/রোড নম্বর, এলাকার নাম"
           />
         )}
+      />
+
+      {/* Interactive Location Pin on Map */}
+      <MapPicker
+        latitude={form.watch("latitude")}
+        longitude={form.watch("longitude")}
+        onChange={({ lat, lng }) => {
+          form.setValue("latitude", lat, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+          form.setValue("longitude", lng, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }}
+        addressHint={form.watch("addressLine1")}
       />
 
       <Separator />

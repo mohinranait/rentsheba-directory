@@ -174,6 +174,12 @@ export function AdminListingWizard() {
       formData.append("description", values.description);
       formData.append("locationId", values.locationId);
       formData.append("addressLine1", values.addressLine1);
+      if (typeof values.latitude === "number" && !isNaN(values.latitude)) {
+        formData.append("latitude", String(values.latitude));
+      }
+      if (typeof values.longitude === "number" && !isNaN(values.longitude)) {
+        formData.append("longitude", String(values.longitude));
+      }
       formData.append("phone", values.phone);
       formData.append("email", values.email ?? "");
       formData.append("website", values.website ?? "");
