@@ -25,8 +25,13 @@ const features = [
 ];
 
 
-export default function LoginPage() {
-
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const params = await searchParams;
+  const nextPath = params.next;
 
   return (
     <>
@@ -77,7 +82,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <LoginForm />
+          <LoginForm nextPath={nextPath} />
 
           {/* Divider */}
           <div className="relative my-6">

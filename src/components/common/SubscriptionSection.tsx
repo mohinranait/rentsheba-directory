@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type {
   PublicSubscriptionPlanListResponse,
@@ -64,9 +65,13 @@ function planFeatures(plan: SubscriptionPlan): string[] {
 function PlanCard({
   plan,
   featured,
+  onChoose,
+  busy,
 }: {
   plan: SubscriptionPlan;
   featured: boolean;
+  onChoose: (plan: SubscriptionPlan) => void;
+  busy: boolean;
 }) {
   const { amount, suffix } = formatPrice(plan);
   const features = planFeatures(plan);
@@ -100,9 +105,22 @@ function PlanCard({
           ))}
         </ul>
 
-        <Button className="mt-8 w-full rounded-lg bg-[#d3f36b] py-3 text-sm font-bold text-[#193d32] hover:bg-[#c4e85d]">
-          {price === 0 ? "Start for free" : `Choose ${plan.name}`}
-          {price > 0 && <ArrowRight className="ml-1 inline size-4" />}
+        <Button
+          type="button"
+          disabled={busy}
+          onClick={() => onChoose(plan)}
+          className="mt-8 w-full rounded-lg bg-[#d3f36b] py-3 text-sm font-bold text-[#193d32] hover:bg-[#c4e85d]"
+        >
+          {busy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : price === 0 ? (
+            "Start for free"
+          ) : (
+            <>
+              Choose {plan.name}
+              <ArrowRight className="ml-1 inline size-4" />
+            </>
+          )}
         </Button>
       </div>
     );
@@ -129,16 +147,29 @@ function PlanCard({
         ))}
       </ul>
 
-      <Button className="mt-8 w-full rounded-lg border border-white/25 bg-transparent py-3 text-sm font-bold text-white hover:bg-white/10">
-        {price === 0 ? "Start for free" : `Choose ${plan.name}`}
+      <Button
+        type="button"
+        disabled={busy}
+        onClick={() => onChoose(plan)}
+        className="mt-8 w-full rounded-lg border border-white/25 bg-transparent py-3 text-sm font-bold text-white hover:bg-white/10"
+      >
+        {busy ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : price === 0 ? (
+          "Start for free"
+        ) : (
+          `Choose ${plan.name}`
+        )}
       </Button>
     </div>
   );
 }
 
 const SubscriptionSection = () => {
+  const router = useRouter();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [mode, setMode] = useState<Mode>("loading");
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -173,6 +204,30 @@ const SubscriptionSection = () => {
       cancelled = true;
     };
   }, []);
+
+  async function handleChoose(plan: SubscriptionPlan) {
+    setPendingSlug(plan.slug);
+
+    const checkoutPath = `/subscription/checkout?plan=${encodeURIComponent(
+      plan.slug,
+    )}`;
+
+    try {
+      const res = await fetch("/api/me", {
+        headers: { Accept: "application/json" },
+      });
+
+      if (res.ok) {
+        router.push(checkoutPath);
+      } else {
+        router.push(`/login?next=${encodeURIComponent(checkoutPath)}`);
+      }
+    } catch {
+      router.push(`/login?next=${encodeURIComponent(checkoutPath)}`);
+    } finally {
+      setPendingSlug(null);
+    }
+  }
 
   const featuredIndex =
     mode === "ready"
@@ -235,6 +290,8 @@ const SubscriptionSection = () => {
                   key={plan.id}
                   plan={plan}
                   featured={index === featuredIndex && plans.length > 1}
+                  onChoose={handleChoose}
+                  busy={pendingSlug === plan.slug}
                 />
               ))}
         </div>

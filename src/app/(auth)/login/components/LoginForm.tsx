@@ -44,7 +44,7 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 
-const LoginForm = () => {
+const LoginForm = ({ nextPath }: { nextPath?: string }) => {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +57,12 @@ const LoginForm = () => {
       remember: false,
     },
   });
+
+  // Only allow internal redirects (prevents open-redirect abuse).
+  const safeNext =
+    nextPath?.startsWith("/") && !nextPath.startsWith("//")
+      ? nextPath
+      : "/dashboard";
 
   async function onSubmit(values: LoginValues) {
     setIsSubmitting(true);
@@ -73,7 +79,8 @@ const LoginForm = () => {
         throw new Error("Submission failed");
       }
 
-      router.push(`/dashboard`)
+      router.push(safeNext)
+      router.refresh()
 
     } finally {
       setIsSubmitting(false);

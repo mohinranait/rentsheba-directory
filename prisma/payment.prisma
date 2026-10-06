@@ -1,23 +1,44 @@
 model Payment {
-  id              String         @id @default(uuid())
+  id                    String         @id @default(uuid())
 
-  subscriptionId  String         @unique
+  subscriptionId        String         @unique
 
-  transactionId   String         @unique
+  // General or bKash transaction ID
+  transactionId         String?        @unique
 
-  amount          Decimal
+  // bKash payment ID returned on create
+  paymentID             String?
 
-  method          PaymentMethod
+  // bKash MFS transaction ID (trxID) from execute/query
+  trxID                 String?
 
-  status          PaymentStatus @default(PENDING)
+  // Merchant invoice number sent to bKash
+  merchantInvoiceNumber String?
 
-  paidAt          DateTime?
+  amount                Decimal
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  currency              String         @default("BDT")
 
-  subscription    Subscription   @relation( fields: [subscriptionId],references: [id],  onDelete: Cascade )
+  method                PaymentMethod  @default(BKASH)
+
+  status                PaymentStatus  @default(PENDING)
+
+  customerMsisdn        String?
+
+  failureReason         String?
+
+  metadata              Json?
+
+  paidAt                DateTime?
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  subscription          Subscription   @relation( fields: [subscriptionId], references: [id], onDelete: Cascade )
 
   @@index([transactionId])
+  @@index([paymentID])
+  @@index([trxID])
+  @@index([merchantInvoiceNumber])
   @@index([status])
 }

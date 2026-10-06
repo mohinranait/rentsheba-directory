@@ -7,8 +7,10 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
     <main className="min-h-screen bg-[#f8faf9] text-[#17251f]">
       <div className="bg-[#133f35] px-4 py-2 text-center text-xs z-10! relative font-medium text-white/85">Bangladesh&apos;s trusted local business directory · List your business for free</div>
       <Header />
+      <div className='min-h-screen'>
 
-      {children}
+        {children}
+      </div>
       <Footer />
 
     </main>
