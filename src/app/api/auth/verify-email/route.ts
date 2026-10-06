@@ -71,7 +71,17 @@ export async function POST(request: Request) {
         .then((found) => found !== null),
     );
 
-    // 4 — Create the account + listing (category, location & all images)
+    // 4 — Find default free plan to initialize user quota
+    const freePlan = await prisma.subscriptionPlan.findFirst({
+      where: { type: "FREE", isActive: true },
+    });
+    const subNow = new Date();
+    const subExpiresAt =
+      freePlan && freePlan.durationInDays > 0
+        ? new Date(subNow.getTime() + freePlan.durationInDays * 86_400_000)
+        : null;
+
+    // Create the account + listing (category, location & all images) + initial subscription
     const createdUser = await prisma.user.create({
       data: {
         name: payload.name,
@@ -80,6 +90,16 @@ export async function POST(request: Request) {
         role: UserRole.USER,
         status: UserStatus.ACTIVE,
         isVerified: true,
+        subscriptions: freePlan
+          ? {
+              create: {
+                planId: freePlan.id,
+                status: "ACTIVE",
+                startsAt: subNow,
+                expiresAt: subExpiresAt,
+              },
+            }
+          : undefined,
         listings: {
           create: {
             title: listing.title,

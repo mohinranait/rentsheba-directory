@@ -44,7 +44,15 @@ export function AddListingWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
+  const [limits, setLimits] = useState<{
+    eligible: boolean;
+    reason?: string;
+    code?: string;
+    currentCount: number;
+    maxListings: number;
+    planName?: string;
+  } | null>(null);
+  const [checkingLimits, setCheckingLimits] = useState(true);
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -53,6 +61,28 @@ export function AddListingWizard() {
   });
 
   const { reset, watch, trigger, handleSubmit } = form;
+
+  // Check current user's subscription limits if signed in
+  useEffect(() => {
+    let cancelled = false;
+    async function checkLimits() {
+      try {
+        const res = await fetch("/api/user/subscription-limits");
+        const json = await res.json();
+        if (!cancelled && json.success && json.data) {
+          setLimits(json.data);
+        }
+      } catch {
+        // visitor / non-logged in user continues as normal
+      } finally {
+        if (!cancelled) setCheckingLimits(false);
+      }
+    }
+    void checkLimits();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Restore a saved draft (text fields only — files can't survive a refresh)
   useEffect(() => {
@@ -183,7 +213,8 @@ export function AddListingWizard() {
       const data = await res.json()
 
       if (!data.success) {
-        throw new Error("Submission failed");
+        setSubmitError(data.message || "জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        return;
       }
 
       window.localStorage.removeItem(DRAFT_KEY);
@@ -196,11 +227,9 @@ export function AddListingWizard() {
       });
 
       router.push(`/verify-email/${encodeURIComponent(data.data.email)}`);
-      
-
-    } catch {
+    } catch (err: unknown) {
       setSubmitError(
-        "দুঃখিত, জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        err instanceof Error ? err.message : "দুঃখিত, জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন。",
       );
     } finally {
       setIsSubmitting(false);
@@ -231,12 +260,78 @@ export function AddListingWizard() {
     );
   }
 
+  // If user is logged in and has reached their subscription listing limit
+  if (limits && !limits.eligible) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 text-center">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-8 shadow-sm">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+            <Loader2 className="size-0 hidden" />
+            <svg
+              className="size-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+
+          <h2 className="mt-5 text-xl font-bold text-amber-950">
+            {limits.code === "SUBSCRIPTION_EXPIRED"
+              ? "সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে"
+              : "লিস্টিং কোটা পূর্ণ হয়েছে"}
+          </h2>
+
+          <p className="mt-3 text-sm leading-6 text-amber-900">
+            {limits.reason}
+          </p>
+
+          <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 border border-amber-200">
+            <span>বর্তমান প্ল্যান: {limits.planName ?? "Free"}</span>
+            <span>•</span>
+            <span>ব্যবহার করেছেন: {limits.currentCount} / {limits.maxListings} টি</span>
+          </div>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button
+              className="bg-[#1F4D3D] hover:bg-[#173B2F] text-white"
+              onClick={() => router.push("/#pricing")}
+            >
+              সাবস্ক্রিপশন আপগ্রেড করুন
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/dashboard")}
+            >
+              ড্যাশবোর্ডে যান
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isLastStep = currentStep === STEPS.length - 1;
 
   return (
     <FormProvider {...form}>
       <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 lg:grid-cols-[220px_1fr] lg:py-16">
-        <aside className="lg:sticky lg:top-10 lg:self-start">
+        <aside className="lg:sticky lg:top-10 lg:self-start space-y-4">
+          {limits?.planName && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-950">
+              <p className="font-semibold">{limits.planName} প্ল্যান</p>
+              <p className="mt-0.5 text-emerald-700">
+                লিস্টিং তৈরি: {limits.currentCount} / {limits.maxListings} টি
+              </p>
+            </div>
+          )}
+
           <StepIndicator
             steps={STEPS}
             currentStep={currentStep}

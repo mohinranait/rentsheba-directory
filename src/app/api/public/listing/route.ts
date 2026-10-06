@@ -11,6 +11,8 @@ import {
   type ListingFormValues,
   listingFormSchema,
 } from "@/lib/schemas/listing-schema";
+import { getSessionUser } from "@/utils/session";
+import { checkUserListingEligibility } from "@/utils/subscription-limits";
 import { uploadAndCreateMedia } from "@/utils/upload-media";
 import { ListingStatus } from "../../../../../generated/prisma/enums";
 
@@ -325,13 +327,53 @@ export async function POST(request: Request) {
     const data = parsed.data;
     const email = data.loginEmail.trim().toLowerCase();
 
+    const session = await getSessionUser();
+    const effectiveUserId = session?.userId;
+
+    if (effectiveUserId) {
+      const eligibility = await checkUserListingEligibility(effectiveUserId);
+      if (!eligibility.eligible) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: eligibility.reason,
+            code: eligibility.code,
+            data: {
+              currentCount: eligibility.currentCount,
+              maxListings: eligibility.maxListings,
+              planName: eligibility.planName,
+            },
+          },
+          { status: 403 },
+        );
+      }
+    }
+
     // A user can only own one account
     const isUserExists = await prisma.user.findUnique({
       where: { email },
     });
 
     if (isUserExists) {
-      throw new Error("User with this email already exists");
+      // Check quota for this existing email
+      const eligibility = await checkUserListingEligibility(isUserExists.id);
+      if (!eligibility.eligible) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: eligibility.reason,
+            code: eligibility.code,
+            data: {
+              currentCount: eligibility.currentCount,
+              maxListings: eligibility.maxListings,
+              planName: eligibility.planName,
+            },
+          },
+          { status: 403 },
+        );
+      }
+
+      throw new Error("User with this email already exists. Please sign in to manage your listings.");
     }
 
     // Hash the password before it touches Redis

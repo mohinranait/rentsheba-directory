@@ -3,12 +3,15 @@
 import {
   ArrowLeft,
   CheckCircle2,
+  CreditCard,
   ExternalLink,
   MapPin,
   Pencil,
   Phone,
+  ShieldCheck,
   Star,
   Trash2,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -615,8 +618,119 @@ export default function ReviewListingPage() {
           </Card>
         </div>
 
-        {/* Right column – features, FAQs, stats, address */}
+        {/* Right column – owner, subscription, features, FAQs, stats, address */}
         <div className="space-y-6">
+          {/* Owner & Subscription Quota */}
+          <Card>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="size-4 text-primary" />
+                Owner & Subscription
+              </CardTitle>
+              {detail.owner && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1 text-xs text-primary"
+                  render={<Link href={`/admin/users/view/${detail.owner.id}`} />}
+                >
+                  View Profile
+                  <ExternalLink className="size-3" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {detail.owner ? (
+                <>
+                  <div className="space-y-1.5 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-xs">Name:</span>
+                      <span className="font-medium text-foreground">{detail.owner.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-xs">Email:</span>
+                      <span className="font-mono text-xs">{detail.owner.email}</span>
+                    </div>
+                    {detail.owner.phone && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground text-xs">Phone:</span>
+                        <span className="text-xs">{detail.owner.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold uppercase text-muted-foreground tracking-wider">
+                        Active Plan
+                      </span>
+                      {detail.owner.quota?.planName ? (
+                        <Badge variant="outline" className="border-primary/40 text-primary text-xs">
+                          {detail.owner.quota.planName}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">No active plan</Badge>
+                      )}
+                    </div>
+
+                    {detail.owner.quota && (
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Listing Quota:</span>
+                          <span className="font-semibold text-foreground">
+                            {detail.owner.quota.currentCount} / {detail.owner.quota.maxListings} used
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden border">
+                          <div
+                            className={`h-full ${
+                              detail.owner.quota.currentCount >= detail.owner.quota.maxListings
+                                ? "bg-destructive"
+                                : "bg-primary"
+                            }`}
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                Math.round(
+                                  (detail.owner.quota.currentCount /
+                                    (detail.owner.quota.maxListings || 1)) *
+                                    100,
+                                ),
+                              )}%`,
+                            }}
+                          />
+                        </div>
+
+                        {detail.owner.quota.expiresAt && (
+                          <div className="flex justify-between pt-1">
+                            <span className="text-muted-foreground">Expires/Due:</span>
+                            <span className="font-medium">
+                              {new Date(detail.owner.quota.expiresAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+
+                        {detail.owner.quota.activeSubscription?.payment?.trxID && (
+                          <div className="flex justify-between items-center pt-0.5">
+                            <span className="text-muted-foreground">bKash TrxID:</span>
+                            <span className="font-mono text-[11px] font-semibold text-emerald-600">
+                              {detail.owner.quota.activeSubscription.payment.trxID}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">No owner assigned to this listing.</p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Address */}
           <Card>
             <CardHeader className="pb-4">

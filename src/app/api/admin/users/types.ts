@@ -21,12 +21,33 @@ export type AdminUserListItem = {
   };
 };
 
+export type AdminUserPayment = {
+  id: string;
+  trxID: string | null;
+  paymentID: string | null;
+  merchantInvoiceNumber: string | null;
+  amount: string | number;
+  currency: string;
+  method: string;
+  status: string;
+  paidAt: Date | string | null;
+  customerMsisdn?: string | null;
+};
+
 export type AdminUserSubscription = {
   id: string;
   status: string;
-  startsAt: Date;
-  expiresAt: Date | null;
-  plan: { id: string; name: string; slug: string } | null;
+  startsAt: Date | string;
+  expiresAt: Date | string | null;
+  createdAt: Date | string;
+  plan: {
+    id: string;
+    name: string;
+    slug: string;
+    price?: string | number;
+    maxListings?: number;
+  } | null;
+  payment?: AdminUserPayment | null;
 };
 
 export type AdminUserListing = {
@@ -39,6 +60,14 @@ export type AdminUserListing = {
 export type AdminUserDetail = AdminUserListItem & {
   listings: AdminUserListing[];
   subscriptions: AdminUserSubscription[];
+  listingQuota?: {
+    eligible: boolean;
+    currentCount: number;
+    maxListings: number;
+    planName?: string;
+    planSlug?: string;
+    expiresAt?: string | null;
+  } | null;
 };
 
 export type AdminUserListStats = {

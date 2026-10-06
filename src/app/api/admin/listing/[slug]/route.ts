@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { adminListingFormSchema } from "@/lib/schemas/admin-listing-schema";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { parseAdminListingFormData } from "@/utils/admin-listing-form";
+import { checkUserListingEligibility } from "@/utils/subscription-limits";
 import { uploadAndCreateMedia } from "@/utils/upload-media";
 import { ListingStatus } from "../../../../../../generated/prisma/enums";
 
@@ -56,7 +57,38 @@ export type AdminListingDetail = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
-  owner: { id: string; name: string; email: string } | null;
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    role?: string;
+    image?: string | null;
+    createdAt?: string;
+    quota?: {
+      eligible: boolean;
+      currentCount: number;
+      maxListings: number;
+      planName?: string;
+      planSlug?: string;
+      expiresAt?: string | null;
+      activeSubscription?: {
+        id: string;
+        status: string;
+        startsAt: string;
+        expiresAt: string | null;
+        planName: string;
+        planPrice: string;
+        payment: {
+          trxID: string | null;
+          paymentID: string | null;
+          status: string;
+          amount: string;
+          paidAt: string | null;
+        } | null;
+      } | null;
+    } | null;
+  } | null;
   category: { id: string; name: string } | null;
   location: {
     id: string;
@@ -121,7 +153,17 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         publishedAt: true,
-        owner: { select: { id: true, name: true, email: true } },
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            image: true,
+            createdAt: true,
+          },
+        },
         category: { select: { id: true, name: true } },
         location: {
           select: { id: true, nameEn: true, nameLocal: true, type: true },
@@ -136,9 +178,75 @@ export async function GET(
       return notFound();
     }
 
+    let ownerWithQuota = null;
+    if (listing.owner) {
+      const [quota, activeSub] = await Promise.all([
+        checkUserListingEligibility(listing.owner.id),
+        prisma.subscription.findFirst({
+          where: {
+            userId: listing.owner.id,
+            status: "ACTIVE",
+            OR: [{ expiresAt: { gt: new Date() } }, { expiresAt: null }],
+          },
+          include: {
+            plan: true,
+            payment: {
+              select: {
+                trxID: true,
+                paymentID: true,
+                status: true,
+                amount: true,
+                paidAt: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+
+      ownerWithQuota = {
+        ...listing.owner,
+        createdAt: listing.owner.createdAt.toISOString(),
+        quota: {
+          eligible: quota.eligible,
+          currentCount: quota.currentCount,
+          maxListings: quota.maxListings,
+          planName: quota.planName,
+          planSlug: quota.planSlug,
+          expiresAt: quota.expiresAt ? quota.expiresAt.toISOString() : null,
+          activeSubscription: activeSub
+            ? {
+                id: activeSub.id,
+                status: activeSub.status,
+                startsAt: activeSub.startsAt.toISOString(),
+                expiresAt: activeSub.expiresAt
+                  ? activeSub.expiresAt.toISOString()
+                  : null,
+                planName: activeSub.plan.name,
+                planPrice: activeSub.plan.price.toString(),
+                payment: activeSub.payment
+                  ? {
+                      trxID: activeSub.payment.trxID,
+                      paymentID: activeSub.payment.paymentID,
+                      status: activeSub.payment.status,
+                      amount: activeSub.payment.amount.toString(),
+                      paidAt: activeSub.payment.paidAt
+                        ? activeSub.payment.paidAt.toISOString()
+                        : null,
+                    }
+                  : null,
+              }
+            : null,
+        },
+      };
+    }
+
     return NextResponse.json({
       success: true,
-      data: listing,
+      data: {
+        ...listing,
+        owner: ownerWithQuota,
+      },
     });
   } catch (error) {
     console.error("Get admin listing error:", error);

@@ -119,10 +119,13 @@ function DialogDescription({
   );
 }
 
+const DialogContent = DialogPopup;
+
 export {
   Dialog,
   DialogBackdrop,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,

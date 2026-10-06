@@ -750,7 +750,16 @@ function ListingRow({
             </div>
 
             <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{listing.owner?.name ?? "Unknown owner"}</span>
+              {listing.owner ? (
+                <Link
+                  href={`/admin/users/view/${listing.owner.id}`}
+                  className="hover:text-primary hover:underline transition-colors font-medium text-foreground/80"
+                >
+                  {listing.owner.name}
+                </Link>
+              ) : (
+                <span>Unknown owner</span>
+              )}
 
               {listing.isClaimed && (
                 <>

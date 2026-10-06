@@ -5,20 +5,27 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
+  CreditCard,
   Heart,
+  Layers,
   Mail,
   Pencil,
   Phone,
   RefreshCcw,
+  ShieldCheck,
   Star,
   Trash2,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import * as React from "react";
+import { ManualActivateDialog } from "@/app/(admin)/admin/subscriptions/components/manual-activate-dialog";
+import { VerifyBkashDialog } from "@/app/(admin)/admin/subscriptions/components/verify-bkash-dialog";
 import type {
   AdminUserDetail,
   AdminUserDetailResponse,
+  AdminUserSubscription,
 } from "@/app/api/admin/users/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { AdminSubscriptionItem } from "@/types/subscription-admin.type";
 import { DeleteUserDialog } from "../../components/delete-user-dialog";
 
 const roleLabel: Record<string, string> = {
@@ -82,6 +90,10 @@ export default function ViewUserPage() {
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
 
+  // Verification & Activation modals
+  const [verifySub, setVerifySub] = React.useState<AdminSubscriptionItem | null>(null);
+  const [activateSub, setActivateSub] = React.useState<AdminSubscriptionItem | null>(null);
+
   const load = React.useCallback(async () => {
     setLoading(true);
     setError("");
@@ -111,6 +123,68 @@ export default function ViewUserPage() {
     window.setTimeout(() => setToast(null), 3500);
   };
 
+  const adaptSubscription = (sub: AdminUserSubscription): AdminSubscriptionItem => {
+    if (!detail) throw new Error("No user detail");
+    return {
+      id: sub.id,
+      userId: detail.id,
+      planId: sub.plan?.id ?? "",
+      status: sub.status as any,
+      startsAt:
+        typeof sub.startsAt === "string"
+          ? sub.startsAt
+          : sub.startsAt.toISOString(),
+      expiresAt: sub.expiresAt
+        ? typeof sub.expiresAt === "string"
+          ? sub.expiresAt
+          : sub.expiresAt.toISOString()
+        : null,
+      createdAt:
+        typeof sub.createdAt === "string"
+          ? sub.createdAt
+          : sub.createdAt.toISOString(),
+      updatedAt: new Date().toISOString(),
+      user: {
+        id: detail.id,
+        name: detail.name,
+        email: detail.email,
+        phone: detail.phone,
+        image: detail.image,
+      },
+      plan: {
+        id: sub.plan?.id ?? "",
+        name: sub.plan?.name ?? "Subscription Plan",
+        slug: sub.plan?.slug ?? "",
+        price: sub.plan?.price ?? 0,
+        maxListings: sub.plan?.maxListings ?? 1,
+        durationInDays: 365,
+      },
+      payment: sub.payment
+        ? {
+            id: sub.payment.id,
+            transactionId: sub.payment.trxID,
+            paymentID: sub.payment.paymentID,
+            trxID: sub.payment.trxID,
+            merchantInvoiceNumber: sub.payment.merchantInvoiceNumber,
+            amount: sub.payment.amount,
+            currency: sub.payment.currency,
+            method: sub.payment.method as any,
+            status: sub.payment.status as any,
+            customerMsisdn: sub.payment.customerMsisdn ?? null,
+            failureReason: null,
+            paidAt: sub.payment.paidAt
+              ? typeof sub.payment.paidAt === "string"
+                ? sub.payment.paidAt
+                : sub.payment.paidAt.toISOString()
+              : null,
+            createdAt: new Date().toISOString(),
+          }
+        : null,
+      daysRemaining: null,
+      isExpiringSoon: false,
+    };
+  };
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-6">
@@ -135,7 +209,7 @@ export default function ViewUserPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-1 flex-col gap-6">
+    <div className="mx-auto flex max-w-5xl flex-1 flex-col gap-6 p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
@@ -204,11 +278,16 @@ export default function ViewUserPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <DashboardStat
           icon={<Building2 className="size-4" />}
-          label="Listings"
+          label="Listings Created"
           value={detail._count.listings}
+        />
+        <DashboardStat
+          icon={<Layers className="size-4" />}
+          label={`Listing Limit (${detail.listingQuota?.planName ?? "Free"})`}
+          value={`${detail.listingQuota?.currentCount ?? detail._count.listings} / ${detail.listingQuota?.maxListings ?? 1}`}
         />
         <DashboardStat
           icon={<Heart className="size-4" />}
@@ -283,7 +362,7 @@ export default function ViewUserPage() {
       {/* Recent listings */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base">Recent listings</CardTitle>
+          <CardTitle className="text-base">Listings Owned ({detail.listings.length})</CardTitle>
         </CardHeader>
         <Separator />
         <CardContent className="pt-4">
@@ -299,8 +378,8 @@ export default function ViewUserPage() {
                   className="flex items-center justify-between gap-3 py-2.5"
                 >
                   <Link
-                    href={`/listing/${listing.slug}`}
-                    className="truncate text-sm font-medium hover:underline"
+                    href={`/admin/listings/edit/${listing.slug}`}
+                    className="truncate text-sm font-medium hover:underline hover:text-primary"
                   >
                     {listing.title}
                   </Link>
@@ -314,10 +393,21 @@ export default function ViewUserPage() {
         </CardContent>
       </Card>
 
-      {/* Subscriptions */}
+      {/* Subscriptions & Payments */}
       <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base">Subscriptions</CardTitle>
+        <CardHeader className="pb-4 flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <CreditCard className="size-4 text-primary" />
+            Subscriptions & Payment History
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-primary"
+            render={<Link href="/admin/subscriptions" />}
+          >
+            All Subscriptions
+          </Button>
         </CardHeader>
         <Separator />
         <CardContent className="pt-4">
@@ -326,30 +416,127 @@ export default function ViewUserPage() {
               This user has no subscriptions yet.
             </p>
           ) : (
-            <ul className="divide-y">
-              {detail.subscriptions.map((subscription) => (
-                <li
-                  key={subscription.id}
-                  className="flex items-center justify-between gap-3 py-2.5"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {subscription.plan?.name ?? "Subscription"}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Started{" "}
-                      {dateFormatter.format(new Date(subscription.startsAt))}
-                      {subscription.expiresAt
-                        ? ` · Ends ${dateFormatter.format(new Date(subscription.expiresAt))}`
-                        : ""}
-                    </p>
+            <div className="space-y-4">
+              {detail.subscriptions.map((subscription) => {
+                const payment = subscription.payment;
+                const isPending =
+                  subscription.status === "PENDING" ||
+                  (payment && payment.status !== "PAID");
+
+                return (
+                  <div
+                    key={subscription.id}
+                    className="rounded-lg border p-4 space-y-3 bg-card"
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-base text-foreground">
+                            {subscription.plan?.name ?? "Subscription"}
+                          </span>
+                          {subscription.plan?.price !== undefined && (
+                            <span className="text-sm text-muted-foreground font-medium">
+                              (৳{subscription.plan.price})
+                            </span>
+                          )}
+                          <Badge
+                            variant="secondary"
+                            className={
+                              subscription.status === "ACTIVE"
+                                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                : subscription.status === "PENDING"
+                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                : "border-slate-200 bg-slate-50 text-slate-700"
+                            }
+                          >
+                            {subscription.status}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Started:{" "}
+                          {dateFormatter.format(new Date(subscription.startsAt))}
+                          {subscription.expiresAt
+                            ? ` · Expiry / Renewal Due: ${dateFormatter.format(new Date(subscription.expiresAt))}`
+                            : " · Lifetime"}
+                        </p>
+                      </div>
+
+                      {/* Action buttons if pending */}
+                      {isPending && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-xs"
+                            onClick={() =>
+                              setVerifySub(adaptSubscription(subscription))
+                            }
+                          >
+                            <ShieldCheck className="size-3.5" />
+                            Verify bKash
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 text-xs"
+                            onClick={() =>
+                              setActivateSub(adaptSubscription(subscription))
+                            }
+                          >
+                            <UserCheck className="size-3.5" />
+                            Activate
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Payment breakdown */}
+                    {payment ? (
+                      <div className="rounded-md bg-muted/40 p-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block text-[11px]">
+                            Payment Status
+                          </span>
+                          <span
+                            className={`font-semibold ${
+                              payment.status === "PAID"
+                                ? "text-emerald-600"
+                                : "text-amber-600"
+                            }`}
+                          >
+                            {payment.status}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px]">Amount</span>
+                          <span className="font-semibold text-foreground">
+                            ৳{payment.amount} {payment.currency}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px]">bKash TrxID</span>
+                          <span className="font-mono font-medium text-foreground">
+                            {payment.trxID || "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px]">Paid Date</span>
+                          <span>
+                            {payment.paidAt
+                              ? dateFormatter.format(new Date(payment.paidAt))
+                              : "—"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        No payment recorded for this subscription.
+                      </p>
+                    )}
                   </div>
-                  <Badge variant="secondary" className="shrink-0">
-                    {subscription.status}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -364,6 +551,27 @@ export default function ViewUserPage() {
           window.setTimeout(() => {
             window.location.href = "/admin/users";
           }, 900);
+        }}
+      />
+
+      {/* Verification & Manual Activation Modals */}
+      <VerifyBkashDialog
+        subscription={verifySub}
+        open={Boolean(verifySub)}
+        onOpenChange={(open) => !open && setVerifySub(null)}
+        onSuccess={() => {
+          showToast("Subscription verified and activated");
+          void load();
+        }}
+      />
+
+      <ManualActivateDialog
+        subscription={activateSub}
+        open={Boolean(activateSub)}
+        onOpenChange={(open) => !open && setActivateSub(null)}
+        onSuccess={() => {
+          showToast("Subscription activated");
+          void load();
         }}
       />
 
@@ -399,16 +607,16 @@ function DashboardStat({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value: number | string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border bg-card p-5 shadow-sm">
+    <div className="flex items-center gap-4 rounded-xl border bg-card p-5 shadow-xs">
       <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
         {icon}
       </span>
       <div>
         <p className="text-2xl font-semibold tracking-tight">
-          {value.toLocaleString()}
+          {typeof value === "number" ? value.toLocaleString() : value}
         </p>
         <p className="text-xs text-muted-foreground">{label}</p>
       </div>

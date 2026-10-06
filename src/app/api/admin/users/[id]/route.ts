@@ -4,6 +4,7 @@ import config from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { adminUserFormSchema } from "@/lib/schemas/admin-user-schema";
 import { uploadToCloudinary } from "@/utils/upload-image";
+import { checkUserListingEligibility } from "@/utils/subscription-limits";
 import { UserRole, UserStatus } from "../../../../../../generated/prisma/enums";
 import type { AdminUserDetailResponse } from "../types";
 
@@ -63,7 +64,30 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             status: true,
             startsAt: true,
             expiresAt: true,
-            plan: { select: { id: true, name: true, slug: true } },
+            createdAt: true,
+            plan: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                price: true,
+                maxListings: true,
+              },
+            },
+            payment: {
+              select: {
+                id: true,
+                trxID: true,
+                paymentID: true,
+                merchantInvoiceNumber: true,
+                amount: true,
+                currency: true,
+                method: true,
+                status: true,
+                paidAt: true,
+                customerMsisdn: true,
+              },
+            },
           },
         },
       },
@@ -76,7 +100,39 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       );
     }
 
-    const response: AdminUserDetailResponse = { success: true, data: user };
+    const quota = await checkUserListingEligibility(id);
+
+    const formattedSubscriptions = user.subscriptions.map((sub) => ({
+      ...sub,
+      plan: sub.plan
+        ? {
+            ...sub.plan,
+            price: sub.plan.price.toString(),
+          }
+        : null,
+      payment: sub.payment
+        ? {
+            ...sub.payment,
+            amount: sub.payment.amount.toString(),
+          }
+        : null,
+    }));
+
+    const response: AdminUserDetailResponse = {
+      success: true,
+      data: {
+        ...user,
+        subscriptions: formattedSubscriptions,
+        listingQuota: {
+          eligible: quota.eligible,
+          currentCount: quota.currentCount,
+          maxListings: quota.maxListings,
+          planName: quota.planName,
+          planSlug: quota.planSlug,
+          expiresAt: quota.expiresAt ? quota.expiresAt.toISOString() : null,
+        },
+      },
+    };
 
     return NextResponse.json(response);
   } catch (error) {
