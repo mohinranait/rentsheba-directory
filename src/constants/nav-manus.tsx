@@ -1,4 +1,4 @@
-import { Building2, CreditCard, FolderTree, LayoutDashboard, MapPinned, Settings, Users } from "lucide-react";
+import { Building2, CreditCard, FolderTree, LayoutDashboard, Mail, MapPinned, Settings, Users } from "lucide-react";
 
 type MenuItem = {
   title: string;
@@ -88,6 +88,11 @@ export const mainMenu: MenuItem[] = [
         href: "/admin/subscription-plan",
       },
     ],
+  },
+  {
+    title: "Messages",
+    href: "/admin/contacts",
+    icon: Mail,
   },
 ];
 

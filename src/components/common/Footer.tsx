@@ -1,5 +1,5 @@
-import { Globe2 } from "lucide-react"
-
+import { Globe2 } from "lucide-react";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -12,10 +12,11 @@ const Footer = () => {
           Rentsheba.
         </div>
         <nav aria-label="Footer navigation" className="flex flex-wrap gap-5">
-          <a href="#top" className="hover:text-[#173f34]">About</a>
-          <a href="#pricing" className="hover:text-[#173f34]">Pricing</a>
-          <a href="#how" className="hover:text-[#173f34]">Help center</a>
-          <a href="#top" className="hover:text-[#173f34]">Privacy</a>
+          <a href="/#top" className="hover:text-[#173f34]">About</a>
+          <a href="/#pricing" className="hover:text-[#173f34]">Pricing</a>
+          <Link href="/contact" className="hover:text-[#173f34]">Contact Us</Link>
+          <a href="/#how" className="hover:text-[#173f34]">Help center</a>
+          <a href="/#top" className="hover:text-[#173f34]">Privacy</a>
         </nav>
         <span>© {new Date().getFullYear()} Rentsheba Directory. All rights reserved.</span>
       </div>

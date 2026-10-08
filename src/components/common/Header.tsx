@@ -75,9 +75,12 @@ const Header = () => {
           <a href="#pricing" className="hover:text-[#133f35]">
             Pricing
           </a>
-          <a href="#how" className="hover:text-[#133f35]">
+          <a href="/#how" className="hover:text-[#133f35]">
             How it works
           </a>
+          <Link href="/contact" className="hover:text-[#133f35]">
+            Contact
+          </Link>
         </nav>
         <div className="flex items-center gap-2">
           {!ready ? (

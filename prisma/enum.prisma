@@ -57,3 +57,10 @@ enum ReviewStatus {
    ACTIVE
    DELETED
 }
+
+enum ContactStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
