@@ -1,5 +1,5 @@
-import { ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const CreateListingSteps = () => {
   return (
@@ -17,9 +17,12 @@ const CreateListingSteps = () => {
             Whether you&apos;re looking for a trusted service or growing
             your business, directory makes the next step clear.
           </p>
-          <Button className="mt-7 rounded-lg bg-[#133f35] px-5 py-3 text-sm font-bold text-white">
+          <Link
+            href="/listing/add"
+            className="mt-7 inline-flex items-center rounded-lg bg-[#133f35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1a4d41]"
+          >
             List your business <ArrowRight className="ml-1 inline size-4" />
-          </Button>
+          </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {[

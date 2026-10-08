@@ -124,14 +124,6 @@ export default function ListingDetails({
       <section className="relative z-10  overflow-hidden border-b border-[#deebe1] bg-[#e8f2ec]/76">
         {" "}
         {/* Grid background */}{" "}
-        {/* <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: ` linear-gradient(to right, rgba(74, 116, 96, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(74, 116, 96, 0.05) 1px, transparent 1px) `,
-            backgroundSize: "56px 56px",
-          }}
-        />{" "} */}
         <div className="relative mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
           {" "}
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#5d8172]">
@@ -211,7 +203,7 @@ export default function ListingDetails({
             <div className="overflow-hidden rounded-3xl border border-[#e0e9e3] bg-white">
               <div
                 className={cn(
-                  "relative flex h-64 items-end justify-between overflow-hidden p-6 sm:h-80",
+                  "relative flex h-64 items-end justify-between overflow-hidden p-6 sm:h-80 lg:h-100",
                   getTone(title),
                 )}
               >

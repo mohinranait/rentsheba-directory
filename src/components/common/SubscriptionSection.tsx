@@ -165,22 +165,26 @@ function PlanCard({
   );
 }
 
-const SubscriptionSection = () => {
+interface SubscriptionSectionProps {
+  initialPlans?: SubscriptionPlan[];
+}
+
+const SubscriptionSection = ({ initialPlans }: SubscriptionSectionProps) => {
   const router = useRouter();
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [mode, setMode] = useState<Mode>("loading");
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(initialPlans ?? []);
+  const [mode, setMode] = useState<Mode>(
+    initialPlans ? (initialPlans.length > 0 ? "ready" : "hidden") : "loading",
+  );
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialPlans && initialPlans.length > 0) return;
+
     let cancelled = false;
 
     async function loadPlans() {
       try {
-        const res = await fetch("/api/public/subscription-plans", {
-          next: {
-            revalidate: 60 * 60 * 24, // 1 day
-          },
-        });
+        const res = await fetch("/api/public/subscription-plans");
         const data = (await res.json()) as PublicSubscriptionPlanListResponse;
 
         if (cancelled) {
@@ -205,7 +209,7 @@ const SubscriptionSection = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialPlans]);
 
   async function handleChoose(plan: SubscriptionPlan) {
     setPendingSlug(plan.slug);

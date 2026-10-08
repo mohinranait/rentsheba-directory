@@ -1,32 +1,8 @@
-import type {
-  PublicListingItem,
-  PublicListingResponse,
-} from "@/app/api/public/listing/route";
 import ListingCard from "@/components/common/ListingCard";
-import config from "@/lib/config";
-
-const EXPLORES_API = `${config.app_url ?? "http://localhost:3000"}/api/public/listing?pageSize=6&sortBy=featured`;
-
-const fetchExplores = async (): Promise<PublicListingItem[]> => {
-  try {
-    const response = await fetch(EXPLORES_API, {
-      next: { revalidate: 60 * 60 }, // 1 hour
-      headers: { Accept: "application/json" },
-    });
-
-    if (!response.ok) return [];
-
-    const json = (await response.json()) as PublicListingResponse;
-
-    return json.data?.items ?? [];
-  } catch (error) {
-    console.error("Explores fetch error:", error);
-    return [];
-  }
-};
+import { getCachedExploreListings } from "@/lib/server-public-listings";
 
 const Explores = async () => {
-  const listings = await fetchExplores();
+  const listings = await getCachedExploreListings(6);
 
   return (
     <section

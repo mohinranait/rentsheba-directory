@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ListingStatus } from "../../../../../generated/prisma/enums";
 
-export const revalidate = 3600 * 24; // 24 hours ISR revalidation
+export const dynamic = "force-dynamic";
+export const revalidate = 86400; // 24 hours (86400s) ISR revalidation
 
 // ---------------------------------------------------------------------------
 // GET /api/public/categories

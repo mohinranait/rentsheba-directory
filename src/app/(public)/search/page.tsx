@@ -182,7 +182,7 @@ const SearchResults = async ({
       </div>
 
       {items.length > 0 ? (
-        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {items.map((item: PublicListingItem) => (
             <ListingCard key={item.id} item={item} />
           ))}

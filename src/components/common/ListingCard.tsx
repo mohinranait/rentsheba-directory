@@ -45,15 +45,15 @@ const ListingCard = ({ item }: { item: PublicListingItem }) => {
       prefetch
       className="group overflow-hidden rounded-2xl border border-[#e1e9e3] bg-[#fbfdfb]"
     >
-      <div className="relative flex h-28 items-end justify-end p-4">
+      <div className="relative flex h-48 items-end justify-end p-4">
         {item.thumbnail?.secure_url ? (
           <>
             <Image
               src={item.thumbnail.secure_url}
               alt={item.thumbnail.alt ?? `${item.title} listing thumbnail`}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="  transition-transform duration-300 group-hover:scale-105"
             />
             <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0c2a21]/25 to-transparent" />
           </>

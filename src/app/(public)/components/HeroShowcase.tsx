@@ -1,39 +1,16 @@
 import { BadgeCheck, MapPin, Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import type {
-  PublicListingItem,
-  PublicListingResponse,
-} from "@/app/api/public/listing/route";
-import config from "@/lib/config";
+import { getCachedHeroListings } from "@/lib/server-public-listings";
 
 // ---------------------------------------------------------------------------
 // Home hero showcase
 // ---------------------------------------------------------------------------
 // Server component: renders the two admin-selected listings on the right side
-// of the hero. Fetched through the same public API as everywhere else and
-// CDN-cached for 60s, so the homepage stays fast. `HeroShowcaseFallback` is
-// the skeleton shown while this component is streaming in.
+// of the hero. Fetched through direct cached Prisma query (ISR 1 hour), so
+// the homepage stays ultra-fast without internal HTTP loopback calls.
+// `HeroShowcaseFallback` is the skeleton shown while streaming in.
 // ---------------------------------------------------------------------------
-
-const HERO_API = `${config.app_url ?? "http://localhost:3000"}/api/public/listing?hero=true&pageSize=2&sortBy=popular`;
-
-const fetchHeroListings = async (): Promise<PublicListingItem[]> => {
-  try {
-    const response = await fetch(HERO_API, {
-      next: { revalidate: 60 * 60 }, // 1 hour
-      headers: { Accept: "application/json" },
-    });
-
-    if (!response.ok) return [];
-
-    const json = (await response.json()) as PublicListingResponse;
-
-    return json.data?.items ?? [];
-  } catch (error) {
-    console.error("Hero showcase fetch error:", error);
-    return [];
-  }
-};
 
 const getInitials = (title: string) =>
   title
@@ -43,16 +20,25 @@ const getInitials = (title: string) =>
     .join("")
     .toUpperCase();
 
-const HeroAvatar = ({ item }: { item: PublicListingItem }) => {
+type ShowcaseItem = Awaited<ReturnType<typeof getCachedHeroListings>>[number];
+
+const HeroAvatar = ({
+  item,
+  priority = false,
+}: {
+  item: ShowcaseItem;
+  priority?: boolean;
+}) => {
   const image = item.thumbnail?.secure_url;
 
   if (image) {
-    // eslint-disable-next-line @next/next/no-img-element -- small cloudinary thumb
     return (
-      // biome-ignore lint/performance/noImgElement: small cloudinary thumb, next/image would stall hero LCP
-      <img
+      <Image
         src={image}
-        alt={item.thumbnail?.alt ?? item.title}
+        alt={item.thumbnail?.alt ?? `${item.title} thumbnail`}
+        width={60}
+        height={60}
+        priority={priority}
         className="size-full rounded-2xl object-cover"
       />
     );
@@ -66,7 +52,7 @@ const HeroAvatar = ({ item }: { item: PublicListingItem }) => {
 };
 
 const HeroShowcase = async () => {
-  const listings = await fetchHeroListings();
+  const listings = await getCachedHeroListings();
   const [primary, secondary] = listings;
 
   return (
@@ -83,7 +69,7 @@ const HeroShowcase = async () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="size-12 overflow-hidden rounded-2xl border border-white/60">
-                <HeroAvatar item={primary} />
+                <HeroAvatar item={primary} priority />
               </div>
               <div>
                 <h3 className="line-clamp-1 font-bold text-[#254b3f]">

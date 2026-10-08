@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getCachedSubscriptionPlans } from "@/lib/subscription-plans";
 
 // ---------------------------------------------------------------------------
 // GET /api/public/subscription-plans
@@ -9,25 +9,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const plans = await prisma.subscriptionPlan.findMany({
-      where: { isActive: true },
-      orderBy: [{ price: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        type: true,
-        price: true,
-        maxListings: true,
-        durationInDays: true,
-        description: true,
-        features: true,
-        badge: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const plans = await getCachedSubscriptionPlans();
 
     return NextResponse.json({
       success: true,

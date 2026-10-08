@@ -85,18 +85,23 @@ const Header = () => {
           ) : user ? (
             <UserMenu user={user} onLogout={() => setUser(null)} />
           ) : (
-            <Link href={"/login"}>
-              <Button className="flex rounded-lg bg-transparent px-3 py-2 text-sm font-semibold text-[#46645a] hover:bg-white">
-                Log in
-              </Button>
+            <Link
+              href="/login"
+              className="flex items-center rounded-lg px-3 py-2 text-sm font-semibold text-[#46645a] transition-colors hover:bg-white"
+            >
+              Log in
             </Link>
           )}
-          <Link href={"/listing/add"} className="hidden sm:inline-flex">
-            <Button className="rounded-lg bg-[#133f35] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1d5548]">
-              Add your listing <ArrowRight className="ml-1 inline size-4" />
-            </Button>
+          <Link
+            href="/listing/add"
+            className="hidden sm:inline-flex items-center rounded-lg bg-[#133f35] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1d5548]"
+          >
+            Add your listing <ArrowRight className="ml-1 inline size-4" />
           </Link>
-          <Button className="grid size-10 place-items-center rounded-lg border border-[#dfe8e3] md:hidden">
+          <Button
+            aria-label="Toggle navigation menu"
+            className="grid size-10 place-items-center rounded-lg border border-[#dfe8e3] md:hidden"
+          >
             <Menu className="size-5" />
           </Button>
         </div>

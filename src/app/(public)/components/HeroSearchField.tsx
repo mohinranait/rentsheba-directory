@@ -138,6 +138,9 @@ const HeroSearchField = ({ initialDivisions = [] }: HeroSearchFieldProps) => {
         <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
           <Search className="size-5 shrink-0 text-[#7d9b90]" />
           <input
+            id="hero-search-input"
+            name="q"
+            aria-label="Search directory"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -149,6 +152,9 @@ const HeroSearchField = ({ initialDivisions = [] }: HeroSearchFieldProps) => {
         </div>
         <div className="hidden w-px bg-[#e1eae4] sm:block" />
         <select
+          id="hero-location-select"
+          name="location"
+          aria-label="Filter by division location"
           value={locationId}
           onChange={(e) => setLocationId(e.target.value)}
           className="border-t border-[#edf1ee] bg-transparent px-3 py-3 text-sm text-[#557068] outline-none sm:border-0"
@@ -161,6 +167,7 @@ const HeroSearchField = ({ initialDivisions = [] }: HeroSearchFieldProps) => {
           ))}
         </select>
         <Button
+          type="button"
           onClick={goToSearch}
           className="rounded-xl bg-[#d3f36b] px-5 py-3 text-sm font-bold text-[#193d32] hover:bg-[#c4e85d]"
         >
