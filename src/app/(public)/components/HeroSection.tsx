@@ -1,11 +1,12 @@
 import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { Suspense } from "react";
+import { getDivisions } from "@/lib/locations";
 import HeroSearchField from "./HeroSearchField";
 import HeroShowcase, { HeroShowcaseFallback } from "./HeroShowcase";
 
 
-const HeroSection = () => {
-  
+const HeroSection = async () => {
+  const divisions = await getDivisions();
 
   return (
     <section id="top" className="relative  bg-white/50">
@@ -23,7 +24,7 @@ const HeroSection = () => {
             Bangladesh — all in one thoughtfully curated directory.
           </p>
 
-         <HeroSearchField />
+          <HeroSearchField initialDivisions={divisions} />
 
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#668279]">
             <span className="flex items-center gap-1.5">
@@ -38,9 +39,9 @@ const HeroSection = () => {
         </div>
 
         <div className="relative hidden min-h-95 lg:block">
-           <Suspense fallback={<HeroShowcaseFallback />}>
-          <HeroShowcase />
-        </Suspense>
+          <Suspense fallback={<HeroShowcaseFallback />}>
+            <HeroShowcase />
+          </Suspense>
         </div>
       </div>
     </section>

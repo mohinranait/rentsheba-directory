@@ -1,4 +1,4 @@
-import { MapPin, SearchX } from "lucide-react";
+import { MapPin, SearchX, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -8,6 +8,7 @@ import type {
 } from "@/app/api/public/listing/route";
 import ListingCard from "@/components/common/ListingCard";
 import config from "@/lib/config";
+import { getDivisions } from "@/lib/locations";
 import SearchPanel from "./components/search-panel";
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,11 @@ const SKELETON_CARDS = [0, 1, 2, 3, 4, 5, 6, 7];
 
 const getBaseUrl = () => config.app_url ?? "http://localhost:3000";
 
-const fetchResults = async (query: string, locationId: string) => {
+const fetchResults = async (
+  query: string,
+  locationId: string,
+  category: string,
+) => {
   const params = new URLSearchParams({
     pageSize: String(PAGE_SIZE),
     sortBy: "popular",
@@ -44,6 +49,7 @@ const fetchResults = async (query: string, locationId: string) => {
 
   if (query) params.set("search", query);
   if (locationId) params.set("locationId", locationId);
+  if (category) params.set("category", category);
 
   const response = await fetch(`${getBaseUrl()}/api/public/listing?${params}`, {
     cache: "no-store",
@@ -129,12 +135,14 @@ const SearchResults = async ({
   query,
   locationId,
   locationLabel,
+  category,
 }: {
   query: string;
   locationId: string;
   locationLabel: string;
+  category: string;
 }) => {
-  const data = await fetchResults(query, locationId);
+  const data = await fetchResults(query, locationId, category);
   const items = data?.items ?? [];
   const total = data?.meta?.total ?? items.length;
 
@@ -150,6 +158,12 @@ const SearchResults = async ({
               for &quot;<span className="font-semibold">{query}</span>&quot;
             </>
           )}
+          {category && (
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#eaf3ee] px-2.5 py-1 text-xs font-semibold text-[#3f6a58]">
+              <Tag className="size-3" />
+              {category}
+            </span>
+          )}
           {locationLabel && (
             <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#eaf3ee] px-2.5 py-1 text-xs font-semibold text-[#3f6a58]">
               <MapPin className="size-3" />
@@ -157,7 +171,7 @@ const SearchResults = async ({
             </span>
           )}
         </p>
-        {(query || locationId) && (
+        {(query || locationId || category) && (
           <Link
             href="/search"
             className="text-xs font-semibold text-[#4b8b71] hover:underline"
@@ -191,18 +205,25 @@ export default async function SearchPage({
   const query = terse(sp.q);
   const locationId = terse(sp.location ?? sp.locationId);
   const locationLabel = terse(sp.locationName);
+  const category = terse(sp.category ?? sp.categorySlug);
+
+  const divisions = await getDivisions();
 
   return (
     <div className="mx-auto mb-20 max-w-7xl px-5 pt-12 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight text-[#153e34]">
-        {query ? `Search: "${query}"` : "Search the directory"}
+        {category
+          ? `Category: ${category}`
+          : query
+            ? `Search: "${query}"`
+            : "Search the directory"}
       </h1>
       <p className="mt-2 max-w-xl text-sm text-[#6e877e]">
         Find trusted businesses, services, and professionals across Bangladesh.
       </p>
 
       <div className="mt-6 max-w-3xl">
-        <SearchPanel />
+        <SearchPanel initialDivisions={divisions} />
       </div>
 
       <Suspense fallback={<SearchResultsSkeleton />}>
@@ -210,6 +231,7 @@ export default async function SearchPage({
           query={query}
           locationId={locationId}
           locationLabel={locationLabel}
+          category={category}
         />
       </Suspense>
     </div>

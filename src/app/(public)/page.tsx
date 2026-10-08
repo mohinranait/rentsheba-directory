@@ -1,8 +1,11 @@
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import SubscriptionSection from "@/components/common/SubscriptionSection";
 import GridBackdrop from "@/components/GridBackdrop";
-import CategoriesGrid from "./components/CategoriesGrid";
+import CategoriesGrid, {
+  CategoriesGridSkeleton,
+} from "./components/CategoriesGrid";
 import CreateListingSteps from "./components/CreateListingSteps";
 import Explores from "./components/Explores";
 import HeroSection from "./components/HeroSection";
@@ -42,11 +45,13 @@ export default function Home() {
                 Something for every need
               </h2>
             </div>
-            <a href="#explore" className="text-sm font-bold text-[#36705e]">
+            <Link href="/search" className="text-sm font-bold text-[#36705e]">
               View all categories <ArrowRight className="ml-1 inline size-4" />
-            </a>
+            </Link>
           </div>
-          <CategoriesGrid />
+          <Suspense fallback={<CategoriesGridSkeleton />}>
+            <CategoriesGrid />
+          </Suspense>
         </div>
       </section>
 

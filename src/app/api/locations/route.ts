@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getDivisions } from "@/lib/locations";
 import { prisma } from "@/lib/prisma";
 
 const LOCATION_TYPES = [
@@ -32,25 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Division has no parent
     if (type === "DIVISION") {
-      const locations = await prisma.location.findMany({
-        where: {
-          type: "DIVISION",
-          parentId: null,
-        },
-        orderBy: {
-          nameEn: "asc",
-        },
-        select: {
-          id: true,
-          nameEn: true,
-          nameLocal: true,
-          slug: true,
-          lat: true,
-          lon: true,
-          postalCode: true,
-          type: true,
-        },
-      });
+      const locations = await getDivisions();
 
       return NextResponse.json({
         success: true,

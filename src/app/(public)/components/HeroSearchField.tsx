@@ -8,9 +8,17 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { LocationNode } from "@/app/api/locations/tree/route";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
+export type DivisionOption = {
+  id: string;
+  nameEn: string;
+  nameLocal?: string | null;
+};
+
+interface HeroSearchFieldProps {
+  initialDivisions?: DivisionOption[];
+}
 
 type Suggestion = {
   id: string;
@@ -23,13 +31,13 @@ type Suggestion = {
   location: { nameLocal: string } | null;
 };
 
-const HeroSearchField = () => {
+const HeroSearchField = ({ initialDivisions = [] }: HeroSearchFieldProps) => {
   const router = useRouter();
 
   const [query, setQuery] = useState("");
   const [locationId, setLocationId] = useState<string>("");
 
-  const [divisions, setDivisions] = useState<LocationNode[]>([]);
+  const [divisions, setDivisions] = useState<DivisionOption[]>(initialDivisions);
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
@@ -38,17 +46,21 @@ const HeroSearchField = () => {
   const searchBoxRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Load the location hierarchy once so the dropdown reflects the real data
+  // Fallback: load divisions only if not provided from the server
   useEffect(() => {
-    fetch("/api/locations/tree")
+    if (divisions.length > 0) return;
+
+    fetch("/api/locations?type=DIVISION")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setDivisions(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setDivisions(data.data);
+        }
       })
       .catch(() => {
         // Leave just "All locations"; the search still works without a filter
       });
-  }, []);
+  }, [divisions.length]);
 
   // Live suggestions while the visitor types
   useEffect(() => {

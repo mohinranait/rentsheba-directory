@@ -10,7 +10,7 @@ const EXPLORES_API = `${config.app_url ?? "http://localhost:3000"}/api/public/li
 const fetchExplores = async (): Promise<PublicListingItem[]> => {
   try {
     const response = await fetch(EXPLORES_API, {
-      next: { revalidate: 60 },
+      next: { revalidate: 60 * 60 }, // 1 hour
       headers: { Accept: "application/json" },
     });
 

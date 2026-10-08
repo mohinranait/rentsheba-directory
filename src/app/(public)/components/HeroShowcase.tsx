@@ -20,7 +20,7 @@ const HERO_API = `${config.app_url ?? "http://localhost:3000"}/api/public/listin
 const fetchHeroListings = async (): Promise<PublicListingItem[]> => {
   try {
     const response = await fetch(HERO_API, {
-      next: { revalidate: 60 },
+      next: { revalidate: 60 * 60 }, // 1 hour
       headers: { Accept: "application/json" },
     });
 

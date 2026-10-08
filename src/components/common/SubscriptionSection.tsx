@@ -177,7 +177,9 @@ const SubscriptionSection = () => {
     async function loadPlans() {
       try {
         const res = await fetch("/api/public/subscription-plans", {
-          cache: "no-store",
+          next: {
+            revalidate: 60 * 60 * 24, // 1 day
+          },
         });
         const data = (await res.json()) as PublicSubscriptionPlanListResponse;
 

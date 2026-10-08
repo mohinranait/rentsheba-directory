@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 const LOCATION_SELECT = {
@@ -21,20 +22,29 @@ function mapLocation<T extends { lat: unknown; lon: unknown }>(location: T) {
   };
 }
 
-export async function getDivisions() {
-  const locations = await prisma.location.findMany({
-    where: {
-      type: "DIVISION",
-      parentId: null,
-    },
-    orderBy: {
-      nameEn: "asc",
-    },
-    select: LOCATION_SELECT,
-  });
+export const getDivisions = unstable_cache(
+  async () => {
+    const locations = await prisma.location.findMany({
+      where: {
+        type: "DIVISION",
+        parentId: null,
+      },
+      orderBy: {
+        nameEn: "asc",
+      },
+      select: LOCATION_SELECT,
+    });
 
-  return locations.map(mapLocation);
-}
+    return locations.map(mapLocation);
+  },
+  ["divisions-list"],
+  {
+    revalidate: 3600 * 24 * 7, // 7 days ISR cache
+    tags: ["locations", "divisions"],
+  },
+);
+
+export type DivisionItem = Awaited<ReturnType<typeof getDivisions>>[number];
 
 async function getChildLocations(
   parentSlug: string,

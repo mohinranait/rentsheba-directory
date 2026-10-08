@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { LocationNode } from "@/app/api/locations/tree/route";
 import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
@@ -14,7 +13,17 @@ import { Button } from "@/components/ui/button";
 // just re-writes the URL and lets the server page re-fetch.
 // ---------------------------------------------------------------------------
 
-const SearchPanel = () => {
+export type DivisionOption = {
+  id: string;
+  nameEn: string;
+  nameLocal?: string | null;
+};
+
+interface SearchPanelProps {
+  initialDivisions?: DivisionOption[];
+}
+
+const SearchPanel = ({ initialDivisions = [] }: SearchPanelProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,18 +31,22 @@ const SearchPanel = () => {
   const [locationId, setLocationId] = useState(
     searchParams.get("location") ?? "",
   );
-  const [divisions, setDivisions] = useState<LocationNode[]>([]);
+  const [divisions, setDivisions] = useState<DivisionOption[]>(initialDivisions);
 
   useEffect(() => {
-    fetch("/api/locations/tree")
+    if (divisions.length > 0) return;
+
+    fetch("/api/locations?type=DIVISION")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setDivisions(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setDivisions(data.data);
+        }
       })
       .catch(() => {
         // Search still works without the location filter
       });
-  }, []);
+  }, [divisions.length]);
 
   const submit = () => {
     const params = new URLSearchParams();
