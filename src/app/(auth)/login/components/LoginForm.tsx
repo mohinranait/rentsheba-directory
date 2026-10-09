@@ -198,7 +198,7 @@ const LoginForm = ({ nextPath }: { nextPath?: string }) => {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="h-12 w-full rounded-xl font-semibold shadow-lg shadow-primary/20"
+        className="h-12 w-full rounded-xl bg-primary font-semibold "
       >
         {isSubmitting ? (
           <>

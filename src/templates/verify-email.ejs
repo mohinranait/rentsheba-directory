@@ -4,7 +4,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HealthCare - Verify Your Email</title>
+  <%
+    const currentSiteName = (typeof siteName !== 'undefined' && siteName) ? siteName : 'RentSheba';
+    const currentSiteTagline = (typeof siteTagline !== 'undefined' && siteTagline) ? siteTagline : 'Bangladesh\'s Trusted Local Directory';
+    const currentLogo = (typeof headerLogo !== 'undefined' && headerLogo) ? headerLogo : null;
+    const currentCopyright = (typeof copyrightText !== 'undefined' && copyrightText) 
+      ? copyrightText.replace('{year}', new Date().getFullYear()) 
+      : `© ${new Date().getFullYear()} ${currentSiteName}. All rights reserved.`;
+    const rawExpire = (typeof expireTime !== 'undefined' && expireTime) ? expireTime : 5;
+    const expireMinutes = (typeof rawExpire === 'number' && rawExpire > 60) ? Math.floor(rawExpire / 60) : rawExpire;
+  %>
+  <title><%= currentSiteName %> - Verify Your Email</title>
 </head>
 
 <body
@@ -16,18 +26,24 @@
 
         <!-- Main Container -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0"
-          style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+          style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
 
           <!-- Header -->
           <tr>
-            <td align="center" style="background-color: #0f766e; padding: 28px 20px;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
-                HealthCare
-              </h1>
+            <td align="center" style="background-color: #133f35; padding: 32px 24px;">
+              <% if (currentLogo) { %>
+                <img src="<%= currentLogo %>" alt="<%= currentSiteName %>" style="max-height: 48px; max-width: 220px; margin-bottom: 8px; display: block;" />
+              <% } else { %>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">
+                  <%= currentSiteName %>
+                </h1>
+              <% } %>
 
-              <p style="margin: 8px 0 0; color: #d1fae5; font-size: 14px;">
-                Your health, our priority
-              </p>
+              <% if (currentSiteTagline) { %>
+                <p style="margin: 8px 0 0; color: #a7f3d0; font-size: 13px; font-weight: 400;">
+                  <%= currentSiteTagline %>
+                </p>
+              <% } %>
             </td>
           </tr>
 
@@ -35,18 +51,16 @@
           <tr>
             <td style="padding: 40px 35px;">
 
-              <h2 style="margin: 0 0 15px; color: #111827; font-size: 24px;">
+              <h2 style="margin: 0 0 15px; color: #111827; font-size: 22px; font-weight: 700;">
                 Verify Your Email
               </h2>
 
-              <p style="margin: 0 0 15px; font-size: 16px; line-height: 1.7;">
-                Hello <strong>
-                  <%= name %>
-                </strong>,
+              <p style="margin: 0 0 15px; font-size: 15px; line-height: 1.7; color: #374151;">
+                Hello <strong><%= name %></strong>,
               </p>
 
               <p style="margin: 0 0 25px; font-size: 15px; line-height: 1.7; color: #4b5563;">
-                Welcome to <strong>HealthCare</strong>! We're happy to have you
+                Welcome to <strong><%= currentSiteName %></strong>! We're excited to have you
                 with us. Please verify your email address using the verification
                 code below to complete your registration.
               </p>
@@ -55,29 +69,29 @@
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="
-                      background-color: #f0fdfa;
-                      border: 1px solid #99f6e4;
+                      background-color: #f0fdf4;
+                      border: 1px solid #bbf7d0;
                       border-radius: 10px;
-                      padding: 25px;
+                      padding: 24px;
                     ">
 
-                    <p style="margin: 0 0 10px; color: #64748b; font-size: 13px;">
+                    <p style="margin: 0 0 10px; color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                       Your verification code
                     </p>
 
                     <div style="
-                      font-size: 34px;
-                      font-weight: 700;
+                      font-size: 36px;
+                      font-weight: 800;
                       letter-spacing: 8px;
-                      color: #0f766e;
+                      color: #133f35;
                     ">
                       <%= otp %>
                     </div>
 
-                    <p style="margin: 15px 0 0; color: #64748b; font-size: 13px;">
+                    <p style="margin: 14px 0 0; color: #64748b; font-size: 13px;">
                       This code will expire in
-                      <strong>
-                        <%= expireTime %> minutes
+                      <strong style="color: #111827;">
+                        <%= expireMinutes %> <%= expireMinutes === 1 ? 'minute' : 'minutes' %>
                       </strong>.
                     </p>
 
@@ -86,13 +100,13 @@
               </table>
 
               <p style="margin: 28px 0 0; font-size: 14px; line-height: 1.7; color: #6b7280;">
-                If you didn't create a HealthCare account, you can safely ignore
+                If you didn't create an account on <%= currentSiteName %>, you can safely ignore
                 this email.
               </p>
 
-              <p style="margin: 25px 0 0; font-size: 15px; color: #374151;">
+              <p style="margin: 25px 0 0; font-size: 15px; color: #374151; line-height: 1.6;">
                 Welcome aboard,<br />
-                <strong>The HealthCare Team</strong>
+                <strong>The <%= currentSiteName %> Team</strong>
               </p>
 
             </td>
@@ -107,7 +121,7 @@
               ">
 
               <p style="margin: 0; font-size: 12px; color: #94a3b8;">
-                © <%= new Date().getFullYear() %> HealthCare. All rights reserved.
+                <%= currentCopyright %>
               </p>
 
               <p style="margin: 8px 0 0; font-size: 12px; color: #94a3b8;">

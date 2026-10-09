@@ -1,28 +1,11 @@
 
 
-import { CheckIcon, Heart, MapPin, ShieldCheck } from "lucide-react";
+import { CheckIcon,  ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { AuthIllustration } from "@/components/authIllustration";
 import { Button } from "@/components/ui/button";
 import LoginForm from "./components/LoginForm";
 
-const features = [
-  {
-    icon: MapPin,
-    title: "হাজারো প্রয়োজনীয় লিস্টিং",
-    description: "আপনার প্রয়োজন অনুযায়ী সেবা খুঁজে নিন।",
-  },
-  {
-    icon: ShieldCheck,
-    title: "নিরাপদ ও সহজ",
-    description: "আপনার তথ্য আমাদের কাছে নিরাপদ।",
-  },
-  {
-    icon: Heart,
-    title: "আপনার পছন্দের তালিকা",
-    description: "পছন্দের লিস্টিং সহজেই সংরক্ষণ করুন।",
-  },
-];
 
 
 export default async function LoginPage({
@@ -39,7 +22,6 @@ export default async function LoginPage({
         eyebrow="আপনার বিশ্বস্ত ডিরেক্টরি"
         heading="প্রয়োজনীয় সেবা খুঁজুন, পছন্দের জায়গাগুলো সংরক্ষণ করুন।"
         body="একটি অ্যাকাউন্ট থেকে আপনার পছন্দের লিস্টিং, সেবা এবং গুরুত্বপূর্ণ তথ্য সহজেই পরিচালনা করুন।"
-        features={features}
       />
       <section className="flex items-center px-6 py-10 sm:px-10 lg:px-14 lg:py-12">
         <div className="mx-auto w-full max-w-107.5">

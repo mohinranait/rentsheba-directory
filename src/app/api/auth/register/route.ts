@@ -7,6 +7,7 @@ import config from "@/lib/config";
 import { transporter } from "@/lib/nodemailer";
 import { prisma } from "@/lib/prisma";
 import { connectRedis } from "@/lib/radis";
+import { getSiteSettings } from "@/lib/settings";
 
 export async function POST(request: Request) {
   try {
@@ -60,18 +61,24 @@ export async function POST(request: Request) {
 
 
     // Send email
-    const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs")
+    const settings = await getSiteSettings();
+    const siteName = settings.siteName || "RentSheba";
+    const templatePath = path.join(process.cwd(), "src/templates/verify-email.ejs");
     const html = await ejs.renderFile(templatePath, {
       name: title,
       otp,
-      expireTime,
-    })
+      expireTime: Math.floor(expireTime / 60),
+      siteName,
+      siteTagline: settings.siteTagline,
+      headerLogo: settings.headerLogo,
+      copyrightText: settings.copyrightText,
+    });
     await transporter.sendMail({
       from: config.email_sender,
       to: email,
-      subject: "Verify Your Email - RentSheba",
-      html
-    })
+      subject: `Verify Your Email - ${siteName}`,
+      html,
+    });
 
     return NextResponse.json(
       {
