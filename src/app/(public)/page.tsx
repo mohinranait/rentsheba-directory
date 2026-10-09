@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import SubscriptionSection from "@/components/common/SubscriptionSection";
 import GridBackdrop from "@/components/GridBackdrop";
 import config from "@/lib/config";
+import { getCachedSiteSettings } from "@/lib/settings";
 import { getCachedSubscriptionPlans } from "@/lib/subscription-plans";
 import CategoriesGrid, {
   CategoriesGridSkeleton,
@@ -15,39 +16,54 @@ import HeroSection from "./components/HeroSection";
 
 const baseUrl = (config.app_url ?? "http://localhost:3000").replace(/\/+$/, "");
 
-export const metadata: Metadata = {
-  title: "Rentsheba — Bangladesh's Trusted Local Business & Service Directory",
-  description:
-    "Explore trusted local businesses, professionals, and services across Bangladesh. Search verified restaurants, clinics, repair services, shops, and more with ratings, reviews, and contact details.",
-  keywords: [
-    "Bangladesh business directory",
-    "local business directory Dhaka",
-    "services in Bangladesh",
-    "find businesses in Dhaka",
-    "Rentsheba directory",
-    "trusted local services Bangladesh",
-    "local businesses Chittagong",
-    "local businesses Sylhet",
-  ],
-  alternates: {
-    canonical: `${baseUrl}`,
-  },
-  openGraph: {
-    title: "Rentsheba — Bangladesh's Trusted Local Business & Service Directory",
-    description:
-      "Explore trusted local businesses, professionals, and services across Bangladesh with verified ratings and direct contacts.",
-    url: `${baseUrl}`,
-    siteName: "Rentsheba Directory",
-    locale: "en_BD",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Rentsheba — Bangladesh's Trusted Local Business & Service Directory",
-    description:
-      "Explore trusted local businesses, professionals, and services across Bangladesh.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getCachedSiteSettings();
+  const siteName = settings.siteName || "Rentsheba";
+  const title =
+    settings.metaTitle ||
+    `${siteName} — ${settings.siteTagline || "Bangladesh's Trusted Local Business & Service Directory"}`;
+  const description =
+    settings.metaDescription ||
+    settings.siteDescription ||
+    "Explore trusted local businesses, professionals, and services across Bangladesh. Search verified restaurants, clinics, repair services, shops, and more with ratings, reviews, and contact details.";
+
+  const keywords = settings.metaKeywords
+    ? settings.metaKeywords.split(",").map((k) => k.trim())
+    : [
+        "Bangladesh business directory",
+        "local business directory Dhaka",
+        "services in Bangladesh",
+        "find businesses in Dhaka",
+        `${siteName} directory`,
+        "trusted local services Bangladesh",
+      ];
+
+  const ogImages = settings.ogImage ? [{ url: settings.ogImage }] : undefined;
+
+  return {
+    title,
+    description,
+    keywords,
+    alternates: {
+      canonical: `${baseUrl}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}`,
+      siteName: `${siteName} Directory`,
+      locale: "en_BD",
+      type: "website",
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ogImages,
+    },
+  };
+}
 
 const EXPLORES_SKELETON = [0, 1, 2, 3, 4, 5];
 
@@ -69,7 +85,12 @@ const ExploresFallback = () => (
 );
 
 export default async function Home() {
-  const plans = await getCachedSubscriptionPlans();
+  const [plans, settings] = await Promise.all([
+    getCachedSubscriptionPlans(),
+    getCachedSiteSettings(),
+  ]);
+
+  const siteName = settings.siteName || "Rentsheba";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -78,8 +99,9 @@ export default async function Home() {
         "@type": "WebSite",
         "@id": `${baseUrl}/#website`,
         url: baseUrl,
-        name: "Rentsheba Directory",
+        name: `${siteName} Directory`,
         description:
+          settings.siteTagline ||
           "Bangladesh's trusted local business and service directory.",
         publisher: {
           "@id": `${baseUrl}/#organization`,
@@ -99,10 +121,18 @@ export default async function Home() {
       {
         "@type": "Organization",
         "@id": `${baseUrl}/#organization`,
-        name: "Rentsheba",
+        name: siteName,
         url: baseUrl,
+        logo: settings.headerLogo || undefined,
         description:
+          settings.siteDescription ||
           "Bangladesh's trusted local business and service directory.",
+        contactPoint: {
+          "@type": "ContactPoint",
+          telephone: settings.helpline || settings.contactPhone || "+880 1700-000000",
+          contactType: "customer service",
+          email: settings.contactEmail || "support@rentsheba.com",
+        },
       },
     ],
   };
@@ -133,18 +163,21 @@ export default async function Home() {
               View all categories <ArrowRight className="ml-1 inline size-4" />
             </Link>
           </div>
-          <Suspense fallback={<CategoriesGridSkeleton />}>
-            <CategoriesGrid />
-          </Suspense>
+
+          <div className="mt-10">
+            <Suspense fallback={<CategoriesGridSkeleton />}>
+              <CategoriesGrid />
+            </Suspense>
+          </div>
         </div>
       </section>
 
+      {/* Explores Section */}
       <Suspense fallback={<ExploresFallback />}>
         <Explores />
       </Suspense>
 
       <CreateListingSteps />
-
       <SubscriptionSection initialPlans={plans} />
     </div>
   );

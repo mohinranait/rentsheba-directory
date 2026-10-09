@@ -16,12 +16,41 @@ const isAuthenticated = () =>
     .split(";")
     .some((cookie) => cookie.trim().startsWith(`${AUTH_STATUS_COOKIE}=`));
 
-const Header = () => {
+export interface HeaderSettingsProps {
+  siteName?: string;
+  headerLogo?: string | null;
+}
+
+interface HeaderProps {
+  settings?: HeaderSettingsProps | null;
+}
+
+const Header = ({ settings: initialSettings }: HeaderProps = {}) => {
   const [user, setUser] = useState<MeUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [settings, setSettings] = useState<HeaderSettingsProps | null>(
+    initialSettings || null,
+  );
 
   useEffect(() => {
     let cancelled = false;
+
+    // Load public settings if not provided as props
+    if (!initialSettings) {
+      fetch("/api/public/settings")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (!cancelled && json?.success && json.data) {
+            setSettings({
+              siteName: json.data.siteName,
+              headerLogo: json.data.headerLogo,
+            });
+          }
+        })
+        .catch(() => {
+          // ignore error and use defaults
+        });
+    }
 
     if (!isAuthenticated()) {
       setReady(true);
@@ -48,7 +77,9 @@ const Header = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialSettings]);
+
+  const siteName = settings?.siteName || "Rentsheba";
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#dfe8e3] bg-white/50 backdrop-blur">
@@ -56,14 +87,26 @@ const Header = () => {
         <Link
           href="/"
           className="flex items-center gap-2.5"
-          aria-label="directory home"
+          aria-label={`${siteName} home`}
         >
-          <span className="grid size-9 place-items-center rounded-xl bg-[#d3f36b] text-[#133f35]">
-            <Globe2 className="size-5" />
-          </span>
-          <span className="text-xl font-bold tracking-[-0.04em]">
-            Rentsheba<span className="text-[#4c796b]">.</span>
-          </span>
+          {settings?.headerLogo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={settings.headerLogo}
+              alt={siteName}
+              className="h-9 w-auto max-w-[180px] object-contain"
+            />
+          ) : (
+            <>
+              <span className="grid size-9 place-items-center rounded-xl bg-[#d3f36b] text-[#133f35]">
+                <Globe2 className="size-5" />
+              </span>
+              <span className="text-xl font-bold tracking-[-0.04em]">
+                {siteName}
+                <span className="text-[#4c796b]">.</span>
+              </span>
+            </>
+          )}
         </Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-[#557068] md:flex">
           <a href="#explore" className="hover:text-[#133f35]">

@@ -102,16 +102,28 @@ export const settingsMenu: MenuItem[] = [
     icon: Settings,
     children: [
       {
-        title: "General Settings",
+        title: "General & Branding",
         href: "/admin/settings",
       },
       {
-        title: "SEO",
-        href: "/admin/settings/seo",
+        title: "Contact & Social",
+        href: "/admin/settings?tab=contact",
       },
       {
-        title: "Email Templates",
-        href: "/admin/settings/email",
+        title: "SEO & Analytics",
+        href: "/admin/settings?tab=seo",
+      },
+      {
+        title: "Email / SMTP",
+        href: "/admin/settings?tab=email",
+      },
+      {
+        title: "Media & Storage",
+        href: "/admin/settings?tab=media",
+      },
+      {
+        title: "Map & System",
+        href: "/admin/settings?tab=map",
       },
     ],
   },

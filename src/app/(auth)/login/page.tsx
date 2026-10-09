@@ -73,7 +73,7 @@ export default async function LoginPage({
             <p className="mt-2 text-sm text-muted-foreground">
               অ্যাকাউন্ট নেই?{" "}
               <Link
-                href="/signup"
+                href="/register"
                 className="font-semibold text-primary underline-offset-4 hover:underline"
               >
                 নতুন অ্যাকাউন্ট তৈরি করুন

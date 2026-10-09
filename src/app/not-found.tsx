@@ -10,8 +10,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import GridBackdrop from "@/components/GridBackdrop";
+import { getCachedSiteSettings } from "@/lib/settings";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const settings = await getCachedSiteSettings();
+  const siteName = settings.siteName || "Rentsheba";
+
   const popularShortcuts = [
     { label: "🍽️ Restaurants & Food", href: "/search?category=restaurant" },
     { label: "🏥 Clinics & Medical", href: "/search?category=medical" },
@@ -30,14 +34,26 @@ export default function NotFound() {
           <Link
             href="/"
             className="flex items-center gap-2.5"
-            aria-label="Rentsheba Directory Home"
+            aria-label={`${siteName} Directory Home`}
           >
-            <span className="grid size-9 place-items-center rounded-xl bg-[#d3f36b] text-[#133f35] shadow-xs">
-              <Globe2 className="size-5" />
-            </span>
-            <span className="text-xl font-bold tracking-[-0.04em]">
-              Rentsheba<span className="text-[#4c796b]">.</span>
-            </span>
+            {settings.headerLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={settings.headerLogo}
+                alt={siteName}
+                className="h-8 w-auto max-w-[160px] object-contain"
+              />
+            ) : (
+              <>
+                <span className="grid size-9 place-items-center rounded-xl bg-[#d3f36b] text-[#133f35] shadow-xs">
+                  <Globe2 className="size-5" />
+                </span>
+                <span className="text-xl font-bold tracking-[-0.04em]">
+                  {siteName}
+                  <span className="text-[#4c796b]">.</span>
+                </span>
+              </>
+            )}
           </Link>
 
           <div className="flex items-center gap-3">
@@ -166,7 +182,7 @@ export default function NotFound() {
       <footer className="relative z-10 border-t border-[#e2ece5]/80 bg-white/50 py-4 text-center text-xs text-[#7d948b] backdrop-blur-sm">
         <p>
           Lost? Call upon Bangladesh&apos;s trusted local network · ©{" "}
-          {new Date().getFullYear()} Rentsheba Directory.
+          {new Date().getFullYear()} {siteName} Directory.
         </p>
       </footer>
     </div>

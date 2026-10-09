@@ -48,6 +48,8 @@ export function MapPicker({
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchError, setSearchError] = React.useState<string | null>(null);
   const [isLocating, setIsLocating] = React.useState(false);
+  const [defaultCenter, setDefaultCenter] = React.useState<[number, number]>(DEFAULT_CENTER);
+  const [defaultZoom, setDefaultZoom] = React.useState<number>(DEFAULT_ZOOM);
 
   const hasCoords =
     typeof latitude === "number" &&
@@ -55,9 +57,25 @@ export function MapPicker({
     !isNaN(latitude) &&
     !isNaN(longitude);
 
-  // Client-side only mounting for Leaflet
+  // Client-side only mounting for Leaflet and load map settings
   React.useEffect(() => {
     setIsClient(true);
+    fetch("/api/public/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j?.success && j.data) {
+          if (
+            typeof j.data.defaultLatitude === "number" &&
+            typeof j.data.defaultLongitude === "number"
+          ) {
+            setDefaultCenter([j.data.defaultLatitude, j.data.defaultLongitude]);
+          }
+          if (typeof j.data.defaultZoom === "number") {
+            setDefaultZoom(j.data.defaultZoom);
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Initialize Leaflet map
@@ -88,9 +106,9 @@ export function MapPicker({
 
       const initialCenter: [number, number] = hasCoords
         ? [latitude, longitude]
-        : DEFAULT_CENTER;
+        : defaultCenter;
 
-      const initialZoom = hasCoords ? 15 : DEFAULT_ZOOM;
+      const initialZoom = hasCoords ? 15 : defaultZoom;
 
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,

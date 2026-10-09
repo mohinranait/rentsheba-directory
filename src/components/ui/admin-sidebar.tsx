@@ -38,7 +38,8 @@ import { Button } from "./button";
 
 
 export function AdminSidebar() {
-   const [user, setUser] = useState<MeUser | null>(null);
+  const [user, setUser] = useState<MeUser | null>(null);
+  const [siteName, setSiteName] = useState("Rentsheba");
   const pathname = usePathname();
   const { state } = useSidebar();
 
@@ -53,28 +54,35 @@ export function AdminSidebar() {
   };
 
   useEffect(() => {
-      let cancelled = false;
-  
-      fetch("/api/me", { headers: { Accept: "application/json" } })
-        .then((response) => {
-          if (response.status === 401) return null;
-          return response.json().catch(() => null);
-        })
-        .then((json) => {
-          if (cancelled) return;
-  
-  
-          setUser(json.user);
-        })
-        .catch(() => {
-          if (!cancelled) setUser(null);
-        });
-  
-      return () => {
-        cancelled = true;
-      };
-    }, []);
+    let cancelled = false;
 
+    fetch("/api/public/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && json?.success && json.data?.siteName) {
+          setSiteName(json.data.siteName);
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/me", { headers: { Accept: "application/json" } })
+      .then((response) => {
+        if (response.status === 401) return null;
+        return response.json().catch(() => null);
+      })
+      .then((json) => {
+        if (cancelled) return;
+
+        setUser(json.user);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const displayName = user?.name || user?.email || "Admin";
   const initials = user ? getInitials(user.name || user.email) : "A";
@@ -91,7 +99,7 @@ export function AdminSidebar() {
             {state === "expanded" && (
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold tracking-tight">
-                  Rentsheba
+                  {siteName}
                 </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   Admin Panel

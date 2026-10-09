@@ -1,0 +1,69 @@
+model SiteSetting {
+  id                    String   @id @default("default")
+
+  // General & Branding
+  siteName              String   @default("Rentsheba")
+  siteTagline           String?  @default("Bangladesh's Trusted Local Business & Service Directory")
+  siteDescription       String?  @default("Explore trusted businesses in Dhaka and across Bangladesh. Find restaurants, salons, clinics, schools, and professional services.")
+  headerLogo            String?
+  footerLogo            String?
+  favicon               String?
+  copyrightText         String?  @default("© {year} Rentsheba Directory. All rights reserved.")
+  currencySymbol        String   @default("৳")
+  currencyCode          String   @default("BDT")
+
+  // Contact & Social
+  contactEmail          String?  @default("support@rentsheba.com")
+  contactPhone          String?  @default("+880 1700-000000")
+  helpline              String?  @default("16263")
+  address               String?  @default("Level 4, Gulshan-2, Dhaka-1212, Bangladesh")
+  workingHours          String?  @default("Sunday - Thursday: 9:00 AM - 6:00 PM")
+  facebookUrl           String?
+  twitterUrl            String?
+  instagramUrl          String?
+  linkedinUrl           String?
+  youtubeUrl            String?
+  whatsappNumber        String?
+
+  // SEO & Analytics
+  metaTitle             String?  @default("Rentsheba — Bangladesh's Trusted Local Business Directory")
+  metaDescription       String?  @default("Explore trusted businesses in Dhaka and across Bangladesh. Find restaurants, salons, clinics, schools, and professional services.")
+  metaKeywords          String?  @default("Bangladesh business directory, local businesses Dhaka, restaurants, clinics, Rentsheba")
+  ogImage               String?
+  googleSiteVerification String?
+  googleAnalyticsId     String?
+  headerScripts         String?
+  footerScripts         String?
+
+  // Email / SMTP
+  smtpHost              String?
+  smtpPort              Int?     @default(587)
+  smtpUser              String?
+  smtpPass              String?
+  smtpSecure            Boolean? @default(false)
+  mailFromName          String?  @default("Rentsheba Directory")
+  mailFromEmail         String?  @default("noreply@rentsheba.com")
+
+  // Cloudinary / Media
+  cloudinaryCloudName   String?
+  cloudinaryApiKey      String?
+  cloudinaryApiSecret   String?
+  cloudinaryFolder      String?  @default("rentsheba")
+
+  // Map & Directory System
+  googleMapsApiKey      String?
+  mapProvider           String?  @default("leaflet")
+  defaultLatitude       Float?   @default(23.8103)
+  defaultLongitude      Float?   @default(90.4125)
+  defaultZoom           Int?     @default(13)
+  maintenanceMode       Boolean  @default(false)
+  requireListingApproval Boolean @default(false)
+
+  // Extra config
+  customJson            Json?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("site_settings")
+}
