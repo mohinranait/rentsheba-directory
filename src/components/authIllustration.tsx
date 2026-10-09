@@ -2,29 +2,22 @@
 import {
   Check,
   Heart,
-  LucideIcon,
   MapPin,
   Search,
   ShieldCheck,
 } from "lucide-react";
-import type { ReactNode } from "react";
 
 type AuthIllustrationProps = {
   eyebrow: string;
   heading: string;
   body: string;
-  features?: {
-    icon: LucideIcon;
-    title: string;
-    description: string;
-  }[]
+ 
 };
 
 export function AuthIllustration({
   eyebrow,
   heading,
   body,
-  features
 }: AuthIllustrationProps) {
   return (
     <section className="relative hidden min-h-[680px] overflow-hidden bg-primary/[0.035] lg:block">
@@ -83,22 +76,6 @@ export function AuthIllustration({
           </p>
         </div>
 
-        {/* ================================================================
-            FEATURES
-        ================================================================= */}
-        <div className="mt-7 space-y-2.5">
-         {features?.map((feature) => (
-            <Feature
-              key={feature.title}
-              icon={<feature.icon className="size-5" />}
-              title={feature.title}
-              description={feature.description}
-            />
-          ))}
-         
-
-        
-        </div>
 
         {/* ================================================================
             BOTTOM VISUAL
@@ -111,35 +88,6 @@ export function AuthIllustration({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Feature
-// ---------------------------------------------------------------------------
-
-function Feature({
-  icon,
-  title,
-  description,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-center gap-3.5">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-background text-primary shadow-sm">
-        {icon}
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold text-foreground">{title}</p>
-
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Directory scene

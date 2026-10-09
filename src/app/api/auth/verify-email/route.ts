@@ -63,15 +63,7 @@ export async function POST(request: Request) {
     const payload = JSON.parse(rawPayload);
     const { listing, media } = payload;
 
-    // 3 — Build a unique slug from the listing title
-    const baseSlug = slugify(listing.title) || `listing-${Date.now()}`;
-    const slug = await uniqueSlug(baseSlug, (candidate) =>
-      prisma.listing
-        .findUnique({ where: { slug: candidate }, select: { id: true } })
-        .then((found) => found !== null),
-    );
-
-    // 4 — Find default free plan to initialize user quota
+    // 3 — Find default free plan to initialize user quota
     const freePlan = await prisma.subscriptionPlan.findFirst({
       where: { type: "FREE", isActive: true },
     });
@@ -81,7 +73,63 @@ export async function POST(request: Request) {
         ? new Date(subNow.getTime() + freePlan.durationInDays * 86_400_000)
         : null;
 
-    // Create the account + listing (category, location & all images) + initial subscription
+    // Optional listing creation if user registered via listing flow
+    let listingsCreateData = undefined;
+    if (listing && listing.title) {
+      const baseSlug = slugify(listing.title) || `listing-${Date.now()}`;
+      const slug = await uniqueSlug(baseSlug, (candidate) =>
+        prisma.listing
+          .findUnique({ where: { slug: candidate }, select: { id: true } })
+          .then((found) => found !== null),
+      );
+
+      listingsCreateData = {
+        create: {
+          title: listing.title,
+          slug,
+          tagline: listing.tagline,
+          shortDescription: listing.shortDescription,
+          description: listing.description,
+          phone: listing.phone,
+          email: listing.email,
+          website: listing.website,
+          whatsapp: listing.whatsapp,
+          addressLine1: listing.addressLine1,
+          latitude:
+            listing.latitude !== undefined && listing.latitude !== null
+              ? Number(listing.latitude)
+              : undefined,
+          longitude:
+            listing.longitude !== undefined && listing.longitude !== null
+              ? Number(listing.longitude)
+              : undefined,
+          establishedYear: listing.establishedYear,
+          priceRange: listing.priceRange,
+          areaServed: listing.areaServed,
+          socialLinks: listing.socialLinks,
+          openingHours: listing.openingHours,
+          features: listing.features,
+          faqs: listing.faqs,
+          verificationStatus: ListingStatus.PENDING,
+          category: listing.categoryId
+            ? { connect: { id: listing.categoryId } }
+            : undefined,
+          location: listing.locationId
+            ? { connect: { id: listing.locationId } }
+            : undefined,
+          logo: media?.logoId ? { connect: { id: media.logoId } } : undefined,
+          thumbnail: media?.thumbnailId
+            ? { connect: { id: media.thumbnailId } }
+            : undefined,
+          gallery:
+            media?.galleryIds && media.galleryIds.length > 0
+              ? { connect: media.galleryIds.map((id: string) => ({ id })) }
+              : undefined,
+        },
+      };
+    }
+
+    // Create the account + optional listing + initial subscription
     const createdUser = await prisma.user.create({
       data: {
         name: payload.name,
@@ -100,48 +148,7 @@ export async function POST(request: Request) {
               },
             }
           : undefined,
-        listings: {
-          create: {
-            title: listing.title,
-            slug,
-            tagline: listing.tagline,
-            shortDescription: listing.shortDescription,
-            description: listing.description,
-            phone: listing.phone,
-            email: listing.email,
-            website: listing.website,
-            whatsapp: listing.whatsapp,
-            addressLine1: listing.addressLine1,
-            latitude:
-              listing.latitude !== undefined && listing.latitude !== null
-                ? Number(listing.latitude)
-                : undefined,
-            longitude:
-              listing.longitude !== undefined && listing.longitude !== null
-                ? Number(listing.longitude)
-                : undefined,
-            establishedYear: listing.establishedYear,
-            priceRange: listing.priceRange,
-            areaServed: listing.areaServed,
-            socialLinks: listing.socialLinks,
-            openingHours: listing.openingHours,
-            features: listing.features,
-            faqs: listing.faqs,
-            verificationStatus: ListingStatus.PENDING,
-            category: listing.categoryId
-              ? { connect: { id: listing.categoryId } }
-              : undefined,
-            location: listing.locationId
-              ? { connect: { id: listing.locationId } }
-              : undefined,
-            logo: media.logoId ? { connect: { id: media.logoId } } : undefined,
-            thumbnail: { connect: { id: media.thumbnailId } },
-            gallery:
-              media.galleryIds.length > 0
-                ? { connect: media.galleryIds.map((id: string) => ({ id })) }
-                : undefined,
-          },
-        },
+        listings: listingsCreateData,
       },
       omit: { password: true },
       include: { listings: true },

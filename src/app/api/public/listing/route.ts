@@ -7,6 +7,7 @@ import config from "@/lib/config";
 import { transporter } from "@/lib/nodemailer";
 import { prisma } from "@/lib/prisma";
 import { connectRedis } from "@/lib/radis";
+import { getSiteSettings } from "@/lib/settings";
 import {
   type ListingFormValues,
   listingFormSchema,
@@ -457,6 +458,8 @@ export async function POST(request: Request) {
     });
 
     // Send the verification email
+    const settings = await getSiteSettings();
+    const siteName = settings.siteName || "RentSheba";
     const templatePath = path.join(
       process.cwd(),
       "src/templates/verify-email.ejs",
@@ -465,13 +468,17 @@ export async function POST(request: Request) {
     const html = await ejs.renderFile(templatePath, {
       name: data.title,
       otp,
-      expireTime: OTP_EXPIRE_SECONDS,
+      expireTime: Math.floor(OTP_EXPIRE_SECONDS / 60),
+      siteName,
+      siteTagline: settings.siteTagline,
+      headerLogo: settings.headerLogo,
+      copyrightText: settings.copyrightText,
     });
 
     await transporter.sendMail({
       from: config.email_sender,
       to: email,
-      subject: "Verify Your Email - RentSheba",
+      subject: `Verify Your Email - ${siteName}`,
       html,
     });
 

@@ -25,7 +25,7 @@ const otpSchema = z.object({
     .length(6, "৬ সংখ্যার কোডটি সম্পূর্ণ দিন")
     .regex(/^\d{6}$/, "শুধু সংখ্যা দিন"),
 });
-const RESEND_COOLDOWN_SECONDS = 45;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 type OtpValues = z.infer<typeof otpSchema>;
 
@@ -117,7 +117,7 @@ const VerifyOtpForm = ({email}:{email:string}) => {
                 onChange={field.onChange}
                 containerClassName="justify-between"
               >
-                <InputOTPGroup className="w-full justify-between gap-2 [&>div]:flex-1">
+                <InputOTPGroup className="w-full justify-between gap-0 [&>div]:flex-1">
                   <InputOTPSlot
                     index={0}
                     className="h-14 flex-1 text-lg"
@@ -134,7 +134,7 @@ const VerifyOtpForm = ({email}:{email:string}) => {
 
                 <InputOTPSeparator />
 
-                <InputOTPGroup className="w-full justify-between gap-2 [&>div]:flex-1">
+                <InputOTPGroup className="w-full justify-between gap-0 [&>div]:flex-1">
                   <InputOTPSlot
                     index={3}
                     className="h-14 flex-1 text-lg"
@@ -161,7 +161,7 @@ const VerifyOtpForm = ({email}:{email:string}) => {
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full bg-primary"
           disabled={isSubmitting || otp?.length !== 6}
         >
           {isSubmitting ? "যাচাই হচ্ছে..." : "ভেরিফাই করুন"}
